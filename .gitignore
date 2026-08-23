@@ -1,0 +1,10 @@
+# Task and local metadata, not part of the PWA
+tasks/
+status.json
+task_1.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp

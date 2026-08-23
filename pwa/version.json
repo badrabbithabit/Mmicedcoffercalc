@@ -1,0 +1,8 @@
+{
+  "project": "coffee-ratio-calculator",
+  "status": "complete",
+  "latest": "1.0.0",
+  "total_features": 9,
+  "pwa_enabled": true,
+  "swift_wrapper": true
+}
