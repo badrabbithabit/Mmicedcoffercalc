@@ -24,11 +24,10 @@
 
 const CACHE_NAME = 'coffee-ratio-v1';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
+  'index.html',
+  'styles.css',
+  'app.js',
+  'manifest.json',
 ];
 
 // Install — cache all assets

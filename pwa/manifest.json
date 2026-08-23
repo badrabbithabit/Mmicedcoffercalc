@@ -27,11 +27,11 @@
   "name": "Coffee Ratio Calculator",
   "short_name": "Coffee Ratio",
   "description": "Japanese Iced Coffee ratio calculator for Moccamaster",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "fullscreen"],
   "orientation": "portrait",
-  "scope": "/",
+  "scope": "./",
   "lang": "en",
   "categories": ["food", "utilities"],
   "icons": [
