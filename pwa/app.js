@@ -243,28 +243,36 @@
       const grid = [];
       for (let r = 0; r < rows; r++) {
         const line = (lines[r] || '').toUpperCase();
-        const pad = Math.max(0, cols - line.length);
-        let padded;
+        const chars = Array.from(line);
+        const pad = Math.max(0, cols - chars.length);
+        let paddedChars;
         if (justify === 'justify') {
-          // Handle "LABEL 🟨 VALUE" format → label + separator left, value right.
-          const m = line.match(/^(\S+)\s+(\S+)\s+(.+)$/);
+          // Handle "LABEL EMOJI VALUE" → label+emoji left, value right.
+          const m = line.match(/^(\S+)\s+(\S+)(\S+)$/);
           if (m) {
-            const label = m[1];
-            const sep = m[2];
+            const leftPart = m[1] + ' ' + m[2];
             const value = m[3];
-            const leftPart = label + ' ' + sep;
-            padded = leftPart + ' '.repeat(pad - value.length) + value;
+            const leftChars = Array.from(leftPart);
+            const valueChars = Array.from(value);
+            const gap = Math.max(0, cols - leftChars.length - valueChars.length);
+            paddedChars = leftChars.concat(Array(gap).fill(' '), valueChars);
           } else {
-            // Fallback: center
             const padLeft = Math.floor(pad / 2);
-            padded = ' '.repeat(padLeft) + line + ' '.repeat(Math.max(0, pad - padLeft));
+            paddedChars = Array(padLeft).fill(' ')
+              .concat(chars, Array(Math.max(0, pad - padLeft)).fill(' '));
           }
         } else {
           const padLeft = Math.floor(pad / 2);
-          padded = ' '.repeat(padLeft) + line +
-            ' '.repeat(Math.max(0, pad - padLeft));
+          paddedChars = Array(padLeft).fill(' ')
+            .concat(chars, Array(Math.max(0, pad - padLeft)).fill(' '));
         }
-        grid.push(padded.split(''));
+        // Pad/truncate to exactly cols to stay within the grid.
+        if (paddedChars.length < cols) {
+          paddedChars = paddedChars.concat(Array(cols - paddedChars.length).fill(' '));
+        } else if (paddedChars.length > cols) {
+          paddedChars = paddedChars.slice(0, cols);
+        }
+        grid.push(paddedChars);
       }
       return grid;
     };
@@ -343,10 +351,10 @@
 
     const boardText = [
       `COFFEE`,
-      `GROUNDS ☕ ${grounds} G`,
-      `HOT ♨️ ${hotMl} G`,
-      `ICE 🧊 ${iceMl} G`,
-      `TOTAL 📏 ${totalMl} G`
+      `GROUNDS ☕${grounds}G`,
+      `HOT ♨️${hotMl}G`,
+      `ICE 🧊${iceMl}G`,
+      `TOTAL 📏${totalMl}G`
     ];
 
     // Never fight the load-time reset animation.
@@ -416,10 +424,10 @@
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
     const text = [
       `COFFEE`,
-      `GROUNDS ☕ ${grounds} G`,
-      `HOT ♨️ ${Math.round(hotWater)} G`,
-      `ICE 🧊 ${Math.round(ice)} G`,
-      `TOTAL 📏 ${Math.round(totalOutput)} G`
+      `GROUNDS ☕${grounds}G`,
+      `HOT ♨️${Math.round(hotWater)}G`,
+      `ICE 🧊${Math.round(ice)}G`,
+      `TOTAL 📏${Math.round(totalOutput)}G`
     ];
     if (prefersReducedMotion) {
       isResetting = false;
