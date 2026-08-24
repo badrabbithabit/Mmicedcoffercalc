@@ -39,6 +39,7 @@
   const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.·-: ";
   const SCRAMBLE_COLORS = ['#00AAFF', '#00FFCC', '#AA00FF', '#FF2D00', '#FFCC00', '#FFFFFF'];
   const ACCENT_COLORS = ['#00FF7F', '#FF4D00', '#AA00FF', '#00AAFF', '#00FFCC'];
+  const MAX_QUEUED_FLIPS = 48;
 
   const prefersReducedMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -86,6 +87,13 @@
     quoteEl.textContent = `\u201C${quote}\u201D`;
   }
 
+  // ── Animation queue cap ──────────────────────────────────────
+  // Counts every tile animation that is queued or running
+  // (from the stagger-delay setTimeout until the flip settles).
+  // scrambleTo() refuses to start once the cap is hit, so a fast
+  // slider drag can never pile up unbounded overlapping flips.
+  let activeFlips = 0;
+
   // ── Tile: one split-flap cell ────────────────────────────────
   function createTile() {
     const el = document.createElement('div');
@@ -129,8 +137,12 @@
       },
 
       // Animate to a new character: staggered scramble + flip settle.
+      // Returns true if the flip was started, false if the board
+      // already has MAX_QUEUED_FLIPS in flight and this one was skipped.
       scrambleTo(target, delay) {
-        if (target === currentChar) return;
+        if (target === currentChar) return false;
+
+        if (activeFlips >= MAX_QUEUED_FLIPS) return false;
 
         clearScramble();
 
@@ -141,7 +153,10 @@
           currentChar = target;
         };
 
-        if (prefersReducedMotion) { commit(); return; }
+        if (prefersReducedMotion) { commit(); return true; }
+
+        activeFlips++;
+        const finish = () => { activeFlips = Math.max(0, activeFlips - 1); };
 
         setTimeout(() => {
           el.classList.add('scrambling');
@@ -167,11 +182,13 @@
                   backSpan.textContent = '';
                   inner.style.transition = '';
                   el.classList.remove('scrambling');
+                  finish();
                 }, FLIP_DURATION / 2);
               }, FLIP_DURATION / 2);
             }
           }, SCRAMBLE_INTERVAL);
         }, delay);
+        return true;
       }
     };
   }
@@ -231,12 +248,15 @@
 
   // Push new text to the board. Only changed tiles animate,
   // cascading left→right, top→bottom (like a real flipboard).
+  // Tiles that hit the MAX_QUEUED_FLIPS cap are set instantly
+  // so the board always ends on the right values.
   function setBoard(lines) {
     const newGrid = formatLines(lines);
     for (let r = 0; r < GRID_ROWS; r++) {
       for (let c = 0; c < GRID_COLS; c++) {
         if (newGrid[r][c] !== currentGrid[r][c]) {
-          tiles[r][c].scrambleTo(newGrid[r][c], (r * GRID_COLS + c) * STAGGER_DELAY);
+          const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * GRID_COLS + c) * STAGGER_DELAY);
+          if (!started) tiles[r][c].set(newGrid[r][c]);
         }
       }
     }
