@@ -187,7 +187,7 @@
       set(char) {
         this.cancel();
         currentChar = char;
-        const blank = char === ' ';
+        const blank = hideBlanks && char === ' ';
         frontSpan.textContent = blank ? '' : char;
         backSpan.textContent = '';
         front.style.backgroundColor = '';
@@ -216,7 +216,7 @@
         pendingFlip = true;
 
         const commit = () => {
-          const blank = target === ' ';
+          const blank = hideBlanks && target === ' ';
           frontSpan.textContent = blank ? '' : target;
           front.style.backgroundColor = '';
           const staticGlyph = isStaticChar(target);
@@ -275,7 +275,7 @@
   }
 
   // ── Boards: grid of tiles + transition orchestration ─────────
-  function makeBoard(zoneEl, gridEl, cols, rows, accentIndexStart, justify) {
+  function makeBoard(zoneEl, gridEl, cols, rows, accentIndexStart, justify, hideBlanks = false) {
     gridEl.style.setProperty('--grid-cols', cols);
     gridEl.style.setProperty('--grid-rows', rows);
 
@@ -420,7 +420,8 @@
     GRID_COLS,
     GRID_ROWS,
     0,
-    'justify' // labels left, values right
+    'justify', // labels left, values right
+    true // hide blank gap cells (col 5, 7, etc.)
   );
 
   const QUOTE_COLS = 11;
