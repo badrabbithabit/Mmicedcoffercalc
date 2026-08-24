@@ -91,6 +91,7 @@
   // scrambleTo() refuses to start once the cap is hit, so a fast
   // slider drag can never pile up unbounded overlapping flips.
   let activeFlips = 0;
+  let resetSettled = false;
 
   // ── Tile: one split-flap cell ────────────────────────────────
   function createTile() {
@@ -154,7 +155,15 @@
         if (prefersReducedMotion) { commit(); return true; }
 
         activeFlips++;
-        const finish = () => { activeFlips = Math.max(0, activeFlips - 1); };
+        const finish = () => {
+          activeFlips = Math.max(0, activeFlips - 1);
+          // Once the load-time cascade is the only thing in flight and
+          // it has all settled, unlock input-driven flips for real.
+          if (!resetSettled && isResetting && activeFlips === 0) {
+            resetSettled = true;
+            isResetting = false;
+          }
+        };
 
         setTimeout(() => {
           el.classList.add('scrambling');
@@ -395,11 +404,16 @@
       setQuoteBoard(wrapQuote(quoteOfToday()));
       return;
     }
-    // Blank grid → full cascade reveal.
+    // Blank grid → full cascade reveal. isResetting is released by
+    // the flip-completion tracking (finish()) once every load-time
+    // animation has actually settled — not by a guessed duration.
     setBoard(text);
     setQuoteBoard(wrapQuote(quoteOfToday()));
-    const cascadeMs = (GRID_ROWS * GRID_COLS) * STAGGER_DELAY + FLIP_DURATION + SCRAMBLES_PER_FLIP * SCRAMBLE_INTERVAL + 100;
-    setTimeout(() => { isResetting = false; }, cascadeMs);
+    if (activeFlips === 0) {
+      // Nothing was queued (e.g. every target was already blank).
+      resetSettled = true;
+      isResetting = false;
+    }
   }
 
   // Fit a quote onto the quote board's fixed 16×3 grid:
