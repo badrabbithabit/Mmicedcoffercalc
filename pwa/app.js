@@ -124,9 +124,10 @@
   }
 
   // ── Tile: one split-flap cell ────────────────────────────────
-  function createTile(hideBlanks = false) {
+  function createTile(col = 0, gapCols = null) {
     const el = document.createElement('div');
     el.className = 'tile';
+    const isGapCol = gapCols ? gapCols.has(col) : false;
 
     const inner = document.createElement('div');
     inner.className = 'tile-inner';
@@ -187,7 +188,7 @@
       set(char) {
         this.cancel();
         currentChar = char;
-        const blank = hideBlanks && char === ' ';
+        const blank = isGapCol && char === ' ';
         frontSpan.textContent = blank ? '' : char;
         backSpan.textContent = '';
         front.style.backgroundColor = '';
@@ -216,7 +217,7 @@
         pendingFlip = true;
 
         const commit = () => {
-          const blank = hideBlanks && target === ' ';
+          const blank = isGapCol && target === ' ';
           frontSpan.textContent = blank ? '' : target;
           front.style.backgroundColor = '';
           const staticGlyph = isStaticChar(target);
@@ -275,7 +276,7 @@
   }
 
   // ── Boards: grid of tiles + transition orchestration ─────────
-  function makeBoard(zoneEl, gridEl, cols, rows, accentIndexStart, justify, hideBlanks = false) {
+  function makeBoard(zoneEl, gridEl, cols, rows, accentIndexStart, justify, gapCols = null) {
     gridEl.style.setProperty('--grid-cols', cols);
     gridEl.style.setProperty('--grid-rows', rows);
 
@@ -288,7 +289,7 @@
     for (let r = 0; r < rows; r++) {
       const row = [];
       for (let c = 0; c < cols; c++) {
-        const t = createTile(hideBlanks);
+        const t = createTile(c, gapCols);
         t.set(' ');
         gridEl.appendChild(t.el);
         row.push(t);
@@ -414,6 +415,8 @@
     return { setLines, rows };
   }
 
+  // Gap columns (0-based) to render as no-tile: col 5 and col 7 (1-based).
+  const GAP_COLS = new Set([4, 6]);
   const board = makeBoard(
     document.getElementById('flipboard'),
     document.getElementById('tile-grid'),
@@ -421,7 +424,7 @@
     GRID_ROWS,
     0,
     'justify', // labels left, values right
-    true // hide blank gap cells (col 5, 7, etc.)
+    GAP_COLS
   );
 
   const QUOTE_COLS = 11;
