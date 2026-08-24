@@ -201,7 +201,7 @@
   }
 
   // ── Boards: grid of tiles + transition orchestration ─────────
-  function makeBoard(zoneEl, gridEl, cols, rows, accentIndexStart) {
+  function makeBoard(zoneEl, gridEl, cols, rows, accentIndexStart, justify) {
     gridEl.style.setProperty('--grid-cols', cols);
     gridEl.style.setProperty('--grid-rows', rows);
 
@@ -243,10 +243,21 @@
       const grid = [];
       for (let r = 0; r < rows; r++) {
         const line = (lines[r] || '').toUpperCase();
-        const padTotal = cols - line.length;
-        const padLeft = Math.max(0, Math.floor(padTotal / 2));
-        const padded = ' '.repeat(padLeft) + line +
-          ' '.repeat(Math.max(0, cols - padLeft - line.length));
+        const pad = Math.max(0, cols - line.length);
+        let padded;
+        if (justify === 'justify') {
+          // Split "LABEL VALUE" → label pinned left, value pinned right.
+          const m = line.match(/^(\S+)\s+(\S+)$/);
+          if (m) {
+            padded = m[1] + ' '.repeat(pad - m[2].length) + m[2];
+          } else {
+            padded = line + ' '.repeat(pad);
+          }
+        } else {
+          const padLeft = Math.floor(pad / 2);
+          padded = ' '.repeat(padLeft) + line +
+            ' '.repeat(Math.max(0, pad - padLeft));
+        }
         grid.push(padded.split(''));
       }
       return grid;
@@ -279,7 +290,8 @@
     document.getElementById('tile-grid'),
     GRID_COLS,
     GRID_ROWS,
-    0
+    0,
+    'justify' // titles left, values right
   );
 
   const QUOTE_COLS = 12;
