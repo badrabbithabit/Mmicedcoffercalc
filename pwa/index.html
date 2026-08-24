@@ -3,17 +3,12 @@
   Coffee Ratio Calculator — index.html (Flipboard / Subway style)
 
   ── ID Map ──────────────────────────────────────────────────────
-  theme-dots            → theme picker container
-  theme-btn[data-theme]→ one button per visual style (3 themes)
-  grounds-slider      → grounds input (10-100g)
-  grounds-display     → shows current grounds value
-  brew-ratio-input    → brew ratio water multiplier (numeric)
-  ice-slider          → ice percentage (0-100%)
-  hot-ratio-display   → hot water percentage (read-only)
-  ice-ratio-display   → ice percentage (read-only)
-  ice-toggle          → toggle ice ON/OFF
-  hot-water-value     → displays computed hot water
-  ice-value           → displays computed ice
+   theme-dots            → theme picker container
+   theme-btn[data-theme]→ one button per visual style (3 themes)
+   grounds-slider      → grounds input (15-60g) — the only user input
+   grounds-display     → shows current grounds value
+   hot-water-value     → displays computed hot water
+   ice-value           → displays computed ice
   total-value         → displays computed total output
   warning             → warning banner (hidden unless triggered)
   warning-text        → warning message text
@@ -56,7 +51,7 @@
         <div class="hero-sub">hot water + ice</div>
       </section>
 
-      <!-- INPUTS: grounds + brew ratio -->
+      <!-- INPUTS: grounds (only adjustable input) -->
       <section class="card">
         <div class="card-head">
           <span class="card-label">Inputs</span>
@@ -82,68 +77,6 @@
             <span>60 g</span>
           </div>
         </div>
-
-        <div class="divider"></div>
-
-        <div class="ratio-row">
-          <span class="row-label">Brew Ratio</span>
-          <div class="ratio-controls">
-            <span class="ratio-static">1 :</span>
-            <input
-              type="number"
-              id="brew-ratio-input"
-              class="ratio-input"
-              value="15"
-              min="1"
-              max="30"
-              step="0.5"
-              aria-label="Brew ratio water amount"
-              disabled
-            >
-          </div>
-        </div>
-      </section>
-
-      <!-- ICE SPLIT -->
-      <section class="card">
-        <div class="card-head">
-          <span class="card-label">Ice Split</span>
-          <button
-            type="button"
-            id="ice-toggle"
-            class="toggle-btn active"
-            role="switch"
-            aria-checked="true"
-            aria-label="Toggle ice"
-            disabled
-          >
-            <span class="toggle-track"></span>
-            <span class="toggle-thumb"></span>
-          </button>
-        </div>
-
-        <div class="split-row">
-          <div class="split-cell hot">
-            <span class="split-num" id="hot-ratio-display">60</span><span class="split-unit">%</span>
-            <span class="split-tag">Hot</span>
-          </div>
-          <div class="split-cell ice">
-            <span class="split-num" id="ice-ratio-display">40</span><span class="split-unit">%</span>
-            <span class="split-tag">Ice</span>
-          </div>
-        </div>
-
-        <input
-          type="range"
-          id="ice-slider"
-          class="slider split-slider"
-          min="0"
-          max="100"
-          step="5"
-          value="40"
-          aria-label="Ice percentage"
-          disabled
-        >
       </section>
 
       <!-- RESULTS BREAKDOWN -->

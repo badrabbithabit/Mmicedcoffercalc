@@ -10,20 +10,17 @@
  * calculate()    — pure function: reads DOM → computes → writes DOM
  * No framework, no dependencies — vanilla JS only
  *
- * ── Module-level State ────────────────────────────────────────────
- * iceOn    : boolean                — whether ice is active
- *
- * ── Formula ───────────────────────────────────────────────────────
- * totalWater = grounds × brewRatio
- * hotWater   = totalWater × (hotPercent / 100)
- * ice        = totalWater × (icePercent / 100)   [when iceOn]
- * hotWater   = totalWater                        [when !iceOn]
- * ice        = 0                                  [when !iceOn]
- * totalOutput = hotWater + ice
- *
- * ── Constants ─────────────────────────────────────────────────────
- * MAX_BATCH_GRAMS : 1000 (1L hard cap)
- * CUPS_PER_LITER  : 4.22675 (US cups)
+   * ── Formula (hard-coded Japanese Iced Coffee) ───────────────
+   * totalWater  = grounds × 15
+   * hotWater    = totalWater × 0.60
+   * ice         = totalWater × 0.40
+   * totalOutput = hotWater + ice
+   *
+   * ── Constants ─────────────────────────────────────────────────────
+   * BREW_RATIO    : 15 (1:15 total liquid per gram of grounds)
+   * ICE_PERCENT   : 40 (40% ice / 60% hot water)
+   * MAX_BATCH_GRAMS : 1000 (1L hard cap)
+   * CUPS_PER_LITER  : 4.22675 (US cups)
  */
 
 (() => {
@@ -36,16 +33,10 @@
   // ── Hard-coded Japanese Iced Coffee settings ───────────────
   const BREW_RATIO = 15;   // 1:15 total water per gram of grounds
   const ICE_PERCENT = 40;  // 40% ice / 60% hot water split
-  const ICE_ON = true;
 
   // ── DOM Elements ───────────────────────────────────────────
   const groundsSlider = document.getElementById('grounds-slider');
   const groundsDisplay = document.getElementById('grounds-display');
-  const brewRatioInput = document.getElementById('brew-ratio-input');
-  const iceSlider = document.getElementById('ice-slider');
-  const hotRatioDisplay = document.getElementById('hot-ratio-display');
-  const iceRatioDisplay = document.getElementById('ice-ratio-display');
-  const iceToggle = document.getElementById('ice-toggle');
   const hotWaterValue = document.getElementById('hot-water-value');
   const iceValue = document.getElementById('ice-value');
   const totalValue = document.getElementById('total-value');
@@ -54,9 +45,6 @@
   const warningText = document.getElementById('warning-text');
   const totalBreakdownValue = document.getElementById('total-breakdown-value');
   const themeDots = document.querySelectorAll('.theme-dot');
-
-  // ── State ─────────────────────────────────────────────────
-  const iceOn = ICE_ON;
 
   // ── Theme (Flipboard / Subway style picker) ─────────────────
   const THEME_KEY = 'coffee-ratio-theme';
@@ -83,17 +71,6 @@
   try { savedTheme = localStorage.getItem(THEME_KEY) || 'subway'; } catch (e) { /* ignore */ }
   applyTheme(savedTheme, false);
 
-  // ── Lock in the fixed Japanese Iced Coffee settings ─────────
-  brewRatioInput.value = BREW_RATIO;
-  brewRatioInput.disabled = true;
-  iceSlider.value = ICE_PERCENT;
-  iceSlider.disabled = true;
-  if (iceToggle) {
-    iceToggle.classList.toggle('active', ICE_ON);
-    iceToggle.setAttribute('aria-checked', ICE_ON);
-    iceToggle.disabled = true;
-  }
-
   // ── Helpers ────────────────────────────────────────────────
   function animateValue(el) {
     el.classList.add('value-animate');
@@ -103,9 +80,8 @@
   // ── Core Calculation ──────────────────────────────────────
   function calculate() {
     const grounds = parseInt(groundsSlider.value, 10);
-    const brewRatio = parseFloat(brewRatioInput.value);
 
-    if (isNaN(grounds) || isNaN(brewRatio) || brewRatio <= 0) {
+    if (isNaN(grounds) || grounds <= 0) {
       hotWaterValue.textContent = '—';
       iceValue.textContent = '—';
       totalValue.textContent = '—';
@@ -117,25 +93,16 @@
     // Update ground display
     groundsDisplay.textContent = `${grounds} g`;
 
-    // Hot + Ice ratio (hard-coded)
+    // Hot + Ice split (hard-coded)
     const icePercent = ICE_PERCENT;
     const hotPercent = 100 - icePercent;
 
-    hotRatioDisplay.textContent = hotPercent;
-    iceRatioDisplay.textContent = icePercent;
+    // Total water = grounds × brew ratio (1:15)
+    const totalWater = grounds * BREW_RATIO;
 
-    // Total water = grounds × brew ratio
-    const totalWater = grounds * brewRatio;
-
-    // Hot water and ice amounts
-    let hotWater, ice;
-    if (iceOn) {
-      hotWater = totalWater * (hotPercent / 100);
-      ice = totalWater * (icePercent / 100);
-    } else {
-      hotWater = totalWater;
-      ice = 0;
-    }
+    // Hot water and ice amounts (ice always on)
+    const hotWater = totalWater * (hotPercent / 100);
+    const ice = totalWater * (icePercent / 100);
 
     // Total output
     const totalOutput = hotWater + ice;
@@ -153,7 +120,7 @@
     if (totalBreakdownValue) totalBreakdownValue.textContent = totalValue.textContent;
 
     // Show/hide ice result
-    iceResult.style.display = iceOn && ice > 0 ? 'flex' : 'none';
+    iceResult.style.display = ice > 0 ? 'flex' : 'none';
 
     // Update total color
     totalValue.classList.remove('warning');

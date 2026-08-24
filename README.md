@@ -44,7 +44,7 @@ Grounds Slider (15-60g) ──▶ calculate() ──▶ DOM updates
 
 ### Core Math
 All calculations happen in `calculate()` in `app.js` using the constants
-`BREW_RATIO = 15`, `ICE_PERCENT = 40`, `ICE_ON = true` (all hard-coded in `app.js`):
+`BREW_RATIO = 15` and `ICE_PERCENT = 40` (hard-coded in `app.js`):
 
 ```javascript
 // 1. Total water from grounds × brew ratio (1:15)
@@ -125,10 +125,7 @@ The app works fully offline once loaded. The service worker caches everything on
 | `.header` | Title/subtitle area |
 | `.calculator` | Main content wrapper (max-width 420px) |
 | `.card` | White elevated container with rounded corners |
-| `.slider` | Main grounds slider (28px thumb, accent gradient track) |
-| `.slider-small` | Ice split slider (22px thumb) |
-| `.toggle-btn` | iOS-style toggle switch (active = green) |
-| `.unit-btn` | Liter/cup toggle (active = green) |
+| `.slider` | Grounds slider (28px thumb, accent gradient track) — the only input |
 | `.value-animate` | Triggered via JS for value change flash |
 | `.warning` | Max batch warning (orange, slides in) |
 
@@ -155,17 +152,13 @@ The app works fully offline once loaded. The service worker caches everything on
 |----------|------|-------------|
 | `BREW_RATIO` | `15` (const) | Hard-coded 1:15 total ratio |
 | `ICE_PERCENT` | `40` (const) | Hard-coded 40% ice / 60% hot water split |
-| `ICE_ON` | `true` (const) | Ice is always active |
 
-The `#brew-ratio-input`, `#ice-slider`, and `#ice-toggle` elements remain in the DOM as
-**read-only displays** of the locked recipe — they are disabled in `app.js` so the user
-cannot change anything but the grounds.
+The brew ratio and ice split are baked in as constants — there are no UI controls for
+them, so the user can only change the grounds.
 
 ## Testing Checklist
 - [ ] Grounds slider moves smoothly, values update instantly (no lag)
-- [ ] Brew ratio input is locked at 1:15 (disabled, read-only)
-- [ ] Ice slider is locked at 40% (disabled, read-only)
-- [ ] Ice toggle is locked ON (disabled)
+- [ ] Only the grounds slider is interactive — no other inputs exist in the UI
 - [ ] Warning appears when total output > 1L (requires >66g — unreachable via slider, verified in tests.js)
 - [ ] Total value turns orange/red when warning is active
 - [ ] Theme picker switches subway / flipboard / noir and persists across reload
