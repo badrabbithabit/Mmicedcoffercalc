@@ -18,9 +18,9 @@
   --transition-smooth: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --bg: #0d0d0f;
-  --surface: #17171b;
-  --surface-2: #1f1f25;
+  --bg: #000;
+  --surface: #000;
+  --surface-2: #000;
   --text-primary: #f5f5f3;
   --text-secondary: #9b9ba3;
   --text-tertiary: #5f5f68;
@@ -85,9 +85,7 @@ body {
 
 .board {
   position: relative;
-  background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.045), transparent 60%),
-    #1a1a1a;
+  background: #000;
   border-radius: var(--radius-lg);
   padding: var(--board-pad-y) var(--board-pad-x);
   box-shadow:
@@ -127,7 +125,7 @@ body {
   width: var(--tile-size);
   height: var(--tile-size);
   perspective: 400px;
-  background: #111;
+  background: #000;
   border-radius: 3px;
 }
 
