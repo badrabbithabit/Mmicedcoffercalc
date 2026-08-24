@@ -31,12 +31,12 @@
 
   // ── Split-flap display constants (flipoff-inspired) ───────────
   const GRID_COLS = 12;
-  const GRID_ROWS = 4;
+  const GRID_ROWS = 5;
   const FLIP_DURATION = 260;
   const STAGGER_DELAY = 22;
   const SCRAMBLE_INTERVAL = 70;
   const SCRAMBLES_PER_FLIP = 9;
-  const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.·-: ";
+  const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.·-: ☕♨️🧊📏";
   const SCRAMBLE_COLORS = ['#00AAFF', '#00FFCC', '#AA00FF', '#FF2D00', '#FFCC00', '#FFFFFF'];
   const ACCENT_COLORS = ['#00FF7F', '#FF4D00', '#AA00FF', '#00AAFF', '#00FFCC'];
   const MAX_QUEUED_FLIPS = 48;
@@ -246,12 +246,18 @@
         const pad = Math.max(0, cols - line.length);
         let padded;
         if (justify === 'justify') {
-          // Split "LABEL VALUE" → label pinned left, value pinned right.
-          const m = line.match(/^(\S+)\s+(\S+)$/);
+          // Handle "LABEL 🟨 VALUE" format → label + separator left, value right.
+          const m = line.match(/^(\S+)\s+(\S+)\s+(.+)$/);
           if (m) {
-            padded = m[1] + ' '.repeat(pad - m[2].length) + m[2];
+            const label = m[1];
+            const sep = m[2];
+            const value = m[3];
+            const leftPart = label + ' ' + sep;
+            padded = leftPart + ' '.repeat(pad - value.length) + value;
           } else {
-            padded = line + ' '.repeat(pad);
+            // Fallback: center
+            const padLeft = Math.floor(pad / 2);
+            padded = ' '.repeat(padLeft) + line + ' '.repeat(Math.max(0, pad - padLeft));
           }
         } else {
           const padLeft = Math.floor(pad / 2);
@@ -336,10 +342,11 @@
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
 
     const boardText = [
-      `HOT ${hotMl} ML`,
-      `ICE ${iceMl} G`,
-      `TOTAL ${totalMl} ML`,
-      `${totalCups} US CUPS`
+      `COFFEE`,
+      `GROUNDS ☕ ${grounds} G`,
+      `HOT ♨️ ${hotMl} G`,
+      `ICE 🧊 ${iceMl} G`,
+      `TOTAL 📏 ${totalMl} G`
     ];
 
     // Never fight the load-time reset animation.
@@ -408,10 +415,11 @@
     const totalLiters = (totalOutput / 1000).toFixed(2);
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
     const text = [
-      `HOT ${Math.round(hotWater)} ML`,
-      `ICE ${Math.round(ice)} G`,
-      `TOTAL ${Math.round(totalOutput)} ML`,
-      `${totalCups} US CUPS`
+      `COFFEE`,
+      `GROUNDS ☕ ${grounds} G`,
+      `HOT ♨️ ${Math.round(hotWater)} G`,
+      `ICE 🧊 ${Math.round(ice)} G`,
+      `TOTAL 📏 ${Math.round(totalOutput)} G`
     ];
     if (prefersReducedMotion) {
       isResetting = false;
