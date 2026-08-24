@@ -24,8 +24,12 @@ The PWA (HTML/CSS/JS) is the source of truth for all business logic. The Swift a
 - **Dark Mode:** Native `@media (prefers-color-scheme: dark)` override
 
 ## Key Logic
-- **Ratio Calculation:** `total_water = grounds * brew_ratio`
-- **Ice Split (100% hot / 0% ice when toggle off)**
+- **Hard-coded Japanese Iced Coffee recipe** (researched standard):
+  - Total ratio **1:15** (grounds : total liquid, ice included)
+  - **60% hot water / 40% ice** split — hot water brews a ~1:9 concentrate, melted ice dilutes it back to 1:15
+  - Only **grounds** (15–60g slider) is user-adjustable; ratio, ice split, and ice toggle are locked in `app.js`
+- **Ratio Calculation:** `total_water = grounds * 15`
+- **Ice Split:** `hot = total_water * 0.60`, `ice = total_water * 0.40` (always on)
 - **Units:** Liter ↔ US Cup conversion via 4.22675
 - **Maximum Batch:** Warning when total output > 1000g
 

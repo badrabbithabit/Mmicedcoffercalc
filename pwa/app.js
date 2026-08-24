@@ -33,6 +33,11 @@
   const CUPS_PER_LITER = 4.22675;
   const MAX_BATCH_GRAMS = 1000;
 
+  // ── Hard-coded Japanese Iced Coffee settings ───────────────
+  const BREW_RATIO = 15;   // 1:15 total water per gram of grounds
+  const ICE_PERCENT = 40;  // 40% ice / 60% hot water split
+  const ICE_ON = true;
+
   // ── DOM Elements ───────────────────────────────────────────
   const groundsSlider = document.getElementById('grounds-slider');
   const groundsDisplay = document.getElementById('grounds-display');
@@ -51,7 +56,7 @@
   const themeDots = document.querySelectorAll('.theme-dot');
 
   // ── State ─────────────────────────────────────────────────
-  let iceOn = true;
+  const iceOn = ICE_ON;
 
   // ── Theme (Flipboard / Subway style picker) ─────────────────
   const THEME_KEY = 'coffee-ratio-theme';
@@ -78,6 +83,17 @@
   try { savedTheme = localStorage.getItem(THEME_KEY) || 'subway'; } catch (e) { /* ignore */ }
   applyTheme(savedTheme, false);
 
+  // ── Lock in the fixed Japanese Iced Coffee settings ─────────
+  brewRatioInput.value = BREW_RATIO;
+  brewRatioInput.disabled = true;
+  iceSlider.value = ICE_PERCENT;
+  iceSlider.disabled = true;
+  if (iceToggle) {
+    iceToggle.classList.toggle('active', ICE_ON);
+    iceToggle.setAttribute('aria-checked', ICE_ON);
+    iceToggle.disabled = true;
+  }
+
   // ── Helpers ────────────────────────────────────────────────
   function animateValue(el) {
     el.classList.add('value-animate');
@@ -101,8 +117,8 @@
     // Update ground display
     groundsDisplay.textContent = `${grounds} g`;
 
-    // Hot + Ice ratio
-    const icePercent = parseInt(iceSlider.value, 10);
+    // Hot + Ice ratio (hard-coded)
+    const icePercent = ICE_PERCENT;
     const hotPercent = 100 - icePercent;
 
     hotRatioDisplay.textContent = hotPercent;
@@ -159,28 +175,8 @@
   }
 
   // ── Event Listeners ────────────────────────────────────────
-
-  // Grounds slider
+  // Grounds slider — the only adjustable input
   groundsSlider.addEventListener('input', calculate);
-
-  // Brew ratio input
-  brewRatioInput.addEventListener('input', calculate);
-
-  // Ice slider
-  iceSlider.addEventListener('input', calculate);
-
-  // Ice toggle
-  iceToggle.addEventListener('click', () => {
-    iceOn = !iceOn;
-    iceToggle.classList.toggle('active', iceOn);
-    iceToggle.setAttribute('aria-checked', iceOn);
-    if (iceOn) {
-      iceSlider.value = 40;
-    } else {
-      iceSlider.value = 100;
-    }
-    calculate();
-  });
 
   // ── Initial Calculate ──────────────────────────────────────
   calculate();

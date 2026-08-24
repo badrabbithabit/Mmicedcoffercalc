@@ -1,84 +1,68 @@
 const assert = require('assert');
 
-function calculate(grounds, brewRatio, icePercent, iceOn) {
-  const MAX_BATCH_GRAMS = 1000;
+// Hard-coded Japanese Iced Coffee settings (mirrors pwa/app.js)
+const BREW_RATIO = 15;  // 1:15 total liquid (hot water + ice) per gram of grounds
+const ICE_PERCENT = 40; // 40% ice / 60% hot water
+const MAX_BATCH_GRAMS = 1000;
 
-  if (!grounds || !brewRatio || brewRatio <= 0) {
+function calculate(grounds) {
+  if (!grounds || grounds <= 0) {
     return { hot: '—', ice: '—', total: '—', warning: false };
   }
 
-  const totalWater = grounds * brewRatio;
-  let hot, ice;
-  if (iceOn) {
-    const hotPercent = 100 - icePercent;
-    hot = totalWater * (hotPercent / 100);
-    ice = totalWater * (icePercent / 100);
-  } else {
-    hot = totalWater;
-    ice = 0;
-  }
+  const totalWater = grounds * BREW_RATIO;
+  const hotPercent = 100 - ICE_PERCENT;
+  const hot = totalWater * (hotPercent / 100);
+  const ice = totalWater * (ICE_PERCENT / 100);
   const total = hot + ice;
 
   return { hot, ice, total, warning: total > MAX_BATCH_GRAMS };
 }
 
 try {
-  // Typical single serving: 30g @ 1:15, 40% ice
-  let r = calculate(30, 15, 40, true);
+  // 30g @ 1:15, 40% ice → 450g total (270 hot / 180 ice)
+  let r = calculate(30);
   assert.strictEqual(r.hot, 270);
   assert.strictEqual(r.ice, 180);
   assert.strictEqual(r.total, 450);
   assert.strictEqual(r.warning, false);
 
-  // Smaller serving: 20g @ 1:15, 40% ice
-  r = calculate(20, 15, 40, true);
+  // 20g @ 1:15, 40% ice → 300g total
+  r = calculate(20);
   assert.strictEqual(r.hot, 180);
   assert.strictEqual(r.ice, 120);
   assert.strictEqual(r.total, 300);
   assert.strictEqual(r.warning, false);
 
-  // Two servings: 60g @ 1:15, 40% ice
-  r = calculate(60, 15, 40, true);
+  // 60g @ 1:15, 40% ice → 900g total (max slider value)
+  r = calculate(60);
   assert.strictEqual(r.hot, 540);
   assert.strictEqual(r.ice, 360);
   assert.strictEqual(r.total, 900);
   assert.strictEqual(r.warning, false);
 
-  // 30g @ 1:15, ice off (hot water only)
-  r = calculate(30, 15, 0, false);
-  assert.strictEqual(r.hot, 450);
-  assert.strictEqual(r.ice, 0);
-  assert.strictEqual(r.total, 450);
+  // 15g @ 1:15, 40% ice → 225g total (min slider value)
+  r = calculate(15);
+  assert.strictEqual(r.hot, 135);
+  assert.strictEqual(r.ice, 90);
+  assert.strictEqual(r.total, 225);
   assert.strictEqual(r.warning, false);
 
-  // 30g @ 1:18, 50% ice
-  r = calculate(30, 18, 50, true);
-  assert.strictEqual(r.hot, 270);
-  assert.strictEqual(r.ice, 270);
-  assert.strictEqual(r.total, 540);
+  // 40g @ 1:15 → 600g total
+  r = calculate(40);
+  assert.strictEqual(r.hot, 360);
+  assert.strictEqual(r.ice, 240);
+  assert.strictEqual(r.total, 600);
   assert.strictEqual(r.warning, false);
-
-  // 50g @ 1:20, 40% ice → 1000g, exactly at limit
-  r = calculate(50, 20, 40, true);
-  assert.strictEqual(r.hot, 600);
-  assert.strictEqual(r.ice, 400);
-  assert.strictEqual(r.total, 1000);
-  assert.strictEqual(r.warning, false);
-
-  // 55g @ 1:20, 40% ice → 1100g, triggers 1L warning
-  r = calculate(55, 20, 40, true);
-  assert.strictEqual(r.hot, 660);
-  assert.strictEqual(r.ice, 440);
-  assert.strictEqual(r.total, 1100);
-  assert.strictEqual(r.warning, true);
 
   // Invalid inputs
-  r = calculate(0, 15, 40, true);
+  r = calculate(0);
   assert.strictEqual(r.hot, '—');
   assert.strictEqual(r.ice, '—');
+  assert.strictEqual(r.total, '—');
   assert.strictEqual(r.warning, false);
 
-  console.log('All 8 tests passed!');
+  console.log('All 6 tests passed!');
 } catch (err) {
   console.error('Test failed:', err.message);
   process.exit(1);

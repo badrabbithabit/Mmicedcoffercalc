@@ -21,52 +21,52 @@ coffee-calculator/
 
 ## How It Works
 
+### Hard-Coded Recipe (Japanese Iced Coffee)
+Only the **grounds** amount is adjustable (15–60g slider). Everything else is locked
+to the researched Japanese iced coffee standard, so the app can never be misconfigured:
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| Total ratio | **1:15** (grounds : total liquid) | Consensus standard for Japanese flash brew — ice included in the ratio |
+| Hot : Ice split | **60% : 40%** | Reliable middle of the ⅓–½ ice range; 40% ice keeps the cup cold and dilutes the concentrate to drinking strength |
+| Max Batch | 1000g (1L) | Hard cap, warns when exceeded |
+
+Sources: Online Coffee Guide ("keep total ratio near 1:15, put about 40% of the water in the
+server as ice"), Complete Home Barista (1:15–1:16 total), Barista At Home (1:15 total, ⅔ hot / ⅓ ice),
+and r/Coffee Moccamaster flash-brew reports (1:10 hot-water concentrate diluted to 1:15 by ~40% ice —
+the same 3:1 hot:ice math).
+
 ### Data Flow
 ```
-Grounds Slider (10-100g) ──┐
-Brew Ratio Input (1:1-1:30) ──┼──▶ calculate() ──▶ formatDisplay() ──▶ DOM updates
-Ice Slider (0-100%) ────────┘      (app.js)       (liters/cups)      (instant)
-Ice Toggle (ON/OFF) ─────────┘
-Unit Toggle (L/cups) ────────┘
+Grounds Slider (15-60g) ──▶ calculate() ──▶ DOM updates
+ (the only input)              (app.js)      (instant)
 ```
 
 ### Core Math
-All calculations happen in `calculate()` in `app.js`:
+All calculations happen in `calculate()` in `app.js` using the constants
+`BREW_RATIO = 15`, `ICE_PERCENT = 40`, `ICE_ON = true` (all hard-coded in `app.js`):
 
 ```javascript
-// 1. Total water from grounds × brew ratio
-totalWater = grounds × brewRatio
+// 1. Total water from grounds × brew ratio (1:15)
+totalWater = grounds × 15
 // e.g., 30g × 15 = 450g total water
 
-// 2. Split between hot water and ice (when ice is ON)
-if iceOn:
-    hotWater = totalWater × (hotPercent / 100)
-    ice = totalWater × (icePercent / 100)
-else:
-    hotWater = totalWater
-    ice = 0
+// 2. Split between hot water and ice (always on)
+hotWater = totalWater × 0.60
+ice      = totalWater × 0.40
 
 // 3. Total output
-totalOutput = hotWater + ice
+totalOutput = hotWater + ice   // = totalWater
 
 // 4. Max batch constraint
 if totalOutput > 1000: show warning (1L max)
 ```
 
-### Key Defaults
-| Setting | Default | Range |
-|---------|---------|-------|
-| Grounds | 15g | 10–100g |
-| Brew Ratio | 1:15 | Adjustable 1:1 to 1:30 |
-| Hot:Ice Split | 60:40 | Adjustable 0–100% ice |
-| Max Batch | 1000g (1L) | Hard cap, warns when exceeded |
-| Unit | Liters | Toggle to cups (1L = 4.22675 cups) |
-
-### Example Calculation (30g grounds, defaults)
+### Example Calculation (30g grounds, hard-coded recipe)
 - Total water = 30 × 15 = **450g**
-- Hot water = 450 × 0.60 = **270g**
+- Hot water = 450 × 0.60 = **270g** (brew at ~1:9 — a concentrate)
 - Ice = 450 × 0.40 = **180g**
-- Total = **450g** = 0.45L = 1.9 cups
+- Total = **450g** = 0.45L = 1.9 cups — ends at the classic 1:15 strength
 
 ## PWA Details
 
@@ -147,30 +147,32 @@ The app works fully offline once loaded. The service worker caches everything on
 | IIFE closure | All logic in an immediately-invoked function — zero global pollution |
 
 ### DOM Event Bindings
-- `#grounds-slider` → `input` event → `calculate()`
-- `#brew-ratio-input` → `input` event → `calculate()`
-- `#ice-slider` → `input` event → `calculate()`
-- `#ice-toggle` → `click` event → toggle `iceOn` state + `calculate()`
-- `#unit-liters` → `click` event → set `unit = 'liters'` + `calculate()`
-- `#unit-cups` → `click` event → set `unit = 'cups'` + `calculate()`
+- `#grounds-slider` → `input` event → `calculate()` — the **only** interactive input
+- `.theme-dot[data-theme]` → `click` event → switch visual theme (subway / flipboard / noir), persisted to localStorage
 
 ### State Variables (module scope)
 | Variable | Type | Description |
 |----------|------|-------------|
-| `unit` | `'liters' \| 'cups'` | Current display unit |
-| `iceOn` | `boolean` | Whether ice calculation is active |
+| `BREW_RATIO` | `15` (const) | Hard-coded 1:15 total ratio |
+| `ICE_PERCENT` | `40` (const) | Hard-coded 40% ice / 60% hot water split |
+| `ICE_ON` | `true` (const) | Ice is always active |
+
+The `#brew-ratio-input`, `#ice-slider`, and `#ice-toggle` elements remain in the DOM as
+**read-only displays** of the locked recipe — they are disabled in `app.js` so the user
+cannot change anything but the grounds.
 
 ## Testing Checklist
-- [ ] Slider moves smoothly, values update instantly (no lag)
-- [ ] Brew ratio input accepts decimals (e.g., 15.5)
-- [ ] Ice toggle switches ice display ON/OFF correctly
-- [ ] Unit toggle switches between liters and cups
-- [ ] Warning appears when total output > 1L
+- [ ] Grounds slider moves smoothly, values update instantly (no lag)
+- [ ] Brew ratio input is locked at 1:15 (disabled, read-only)
+- [ ] Ice slider is locked at 40% (disabled, read-only)
+- [ ] Ice toggle is locked ON (disabled)
+- [ ] Warning appears when total output > 1L (requires >66g — unreachable via slider, verified in tests.js)
 - [ ] Total value turns orange/red when warning is active
-- [ ] Dark mode toggles correctly (change system theme)
+- [ ] Theme picker switches subway / flipboard / noir and persists across reload
 - [ ] iOS: opens fullscreen in WKWebView with no URL bar
 - [ ] iOS: PWA installs to home screen with correct icon
 - [ ] Offline: app works after service worker caches everything
+- [ ] `node tests.js` → all tests pass
 
 ## Adding New Features
 1. **New calculation input** → Add HTML to `index.html` inside `.ratios-card`, add CSS styling to `styles.css`, add event listener + calculation logic in `calculate()` in `app.js`
