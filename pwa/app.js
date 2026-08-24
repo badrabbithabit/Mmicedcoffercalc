@@ -30,7 +30,7 @@
   const ICE_PERCENT = 40;  // 40% ice / 60% hot water split
 
   // ── Split-flap display constants (flipoff-inspired) ───────────
-  const GRID_COLS = 12;
+  const GRID_COLS = 13;
   const GRID_ROWS = 5;
   const FLIP_DURATION = 260;
   const STAGGER_DELAY = 22;
@@ -263,19 +263,19 @@
         const pad = Math.max(0, cols - chars.length);
         let paddedChars;
         if (justify === 'justify') {
-          // Handle "LABEL EMOJI VALUE" → label+emoji left, value right.
-          const m = line.match(/^(\S+)\s+(\S+)(\S+)$/);
-          if (m) {
-            const leftPart = m[1] + ' ' + m[2];
-            const value = m[3];
-            const leftChars = Array.from(leftPart);
-            const valueChars = Array.from(value);
+          // Push the trailing value flush to the right edge:
+          //   "LABEL VALUE" → LABEL left, VALUE right
+          //   "LABEL EMOJI VALUE" → LABEL EMOJI left, VALUE right
+          // The leading space is the split point (value = last word).
+          const sp = line.lastIndexOf(' ');
+          if (sp > 0) {
+            const leftChars = Array.from(line.slice(0, sp));
+            const valueChars = Array.from(line.slice(sp + 1));
             const gap = Math.max(0, cols - leftChars.length - valueChars.length);
             paddedChars = leftChars.concat(Array(gap).fill(' '), valueChars);
           } else {
-            const padLeft = Math.floor(pad / 2);
-            paddedChars = Array(padLeft).fill(' ')
-              .concat(chars, Array(Math.max(0, pad - padLeft)).fill(' '));
+            // No value — just left-align (e.g. the COFFEE title).
+            paddedChars = chars.concat(Array(Math.max(0, cols - chars.length)).fill(' '));
           }
         } else {
           const padLeft = Math.floor(pad / 2);
@@ -324,7 +324,7 @@
     'justify' // titles left, values right
   );
 
-  const QUOTE_COLS = 12;
+  const QUOTE_COLS = 13;
   const QUOTE_ROWS = 4;
   const quoteBoard = makeBoard(
     document.getElementById('quote-board'),
