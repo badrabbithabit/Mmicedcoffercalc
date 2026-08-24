@@ -36,11 +36,12 @@
   --font-display: -apple-system, BlinkMacSystemFont, system-ui, "SF Pro Display", "Segoe UI", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
 
-  /* Board / tile sizing — fits 10 columns inside iPhone Air width */
-  --tile-size: clamp(28px, 8.4vw, 62px);
+  /* Board / tile sizing — 10 columns, sized to leave room for generous
+     padding inside the board AND still fit the iPhone Air width. */
+  --tile-size: clamp(24px, 7.4vw, 54px);
   --tile-gap: clamp(2px, 0.4vw, 4px);
-  --board-pad-x: clamp(14px, 4vw, 28px);
-  --board-pad-y: clamp(12px, 2.6vw, 20px);
+  --board-pad-x: clamp(20px, 5.5vw, 40px);
+  --board-pad-y: clamp(18px, 4vw, 32px);
   --brand: #ffb424;
 }
 
@@ -110,7 +111,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 0;
-  padding: 0.5rem 0.5rem;
+  padding: 0.75rem 0.75rem;
   overflow: hidden;
 }
 
@@ -206,15 +207,19 @@ body {
 
 .tile-back { transform: rotateX(180deg); }
 
-/* Non-flipboard glyphs (emoji + the "G" unit): no mechanical seam,
-   rendered a touch larger and dead-centre so they sit vertically
-   aligned with the flipping letters around them. */
+/* Non-flipboard glyphs (☕ ♨ ❄ ▦ + the "G" unit): no mechanical seam,
+   dead-centre. Crucially they render in the SAME monospace stack as the
+   digits (not the system emoji font) so each glyph occupies exactly one
+   fixed-width cell — otherwise the wider emoji spill into the next cell
+   and the whole row drifts out of alignment. */
 .tile-front.static-glyph { display: flex; align-items: center; justify-content: center; }
 .tile-front.static-glyph::after { display: none; }
 .tile-front.static-glyph span {
-  font-size: calc(var(--tile-size) * 0.72);
+  font-size: calc(var(--tile-size) * 0.66);
   line-height: 1;
   text-transform: none;
+  font-family: 'Courier New', Courier, ui-monospace, Menlo, monospace;
+  letter-spacing: 0;
 }
 
 /* Mechanical seam down the middle of each flap */
@@ -331,7 +336,7 @@ body {
   flex: 0 0 auto;
   display: flex;
   justify-content: center;
-  padding: 0.5rem 0.5rem;
+  padding: 0.75rem 0.75rem;
   min-height: 0;
 }
 
