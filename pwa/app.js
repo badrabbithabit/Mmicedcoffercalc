@@ -30,8 +30,8 @@
   const ICE_PERCENT = 40;  // 40% ice / 60% hot water split
 
   // ── Split-flap display constants (flipoff-inspired) ───────────
-  const GRID_COLS = 16;
-  const GRID_ROWS = 5;
+  const GRID_COLS = 12;
+  const GRID_ROWS = 4;
   const FLIP_DURATION = 260;
   const STAGGER_DELAY = 22;
   const SCRAMBLE_INTERVAL = 70;
@@ -201,22 +201,22 @@
   }
 
   // ── Boards: grid of tiles + transition orchestration ─────────
-  function makeBoard(zoneEl, gridEl, rows, accentIndexStart) {
-    gridEl.style.setProperty('--grid-cols', GRID_COLS);
+  function makeBoard(zoneEl, gridEl, cols, rows, accentIndexStart) {
+    gridEl.style.setProperty('--grid-cols', cols);
     gridEl.style.setProperty('--grid-rows', rows);
 
     const tiles = [];
     const currentGrid = [];
     for (let r = 0; r < rows; r++) {
       const row = [];
-      for (let c = 0; c < GRID_COLS; c++) {
+      for (let c = 0; c < cols; c++) {
         const t = createTile();
         t.set(' ');
         gridEl.appendChild(t.el);
         row.push(t);
       }
       tiles.push(row);
-      currentGrid.push(new Array(GRID_COLS).fill(' '));
+      currentGrid.push(new Array(cols).fill(' '));
     }
 
     let accentIndex = accentIndexStart;
@@ -243,10 +243,10 @@
       const grid = [];
       for (let r = 0; r < rows; r++) {
         const line = (lines[r] || '').toUpperCase();
-        const padTotal = GRID_COLS - line.length;
+        const padTotal = cols - line.length;
         const padLeft = Math.max(0, Math.floor(padTotal / 2));
         const padded = ' '.repeat(padLeft) + line +
-          ' '.repeat(Math.max(0, GRID_COLS - padLeft - line.length));
+          ' '.repeat(Math.max(0, cols - padLeft - line.length));
         grid.push(padded.split(''));
       }
       return grid;
@@ -259,9 +259,9 @@
     const setLines = (lines) => {
       const newGrid = formatLines(lines);
       for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < GRID_COLS; c++) {
+        for (let c = 0; c < cols; c++) {
           if (newGrid[r][c] !== currentGrid[r][c]) {
-            const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * GRID_COLS + c) * STAGGER_DELAY);
+            const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * cols + c) * STAGGER_DELAY);
             if (!started) tiles[r][c].set(newGrid[r][c]);
           }
         }
@@ -277,14 +277,17 @@
   const board = makeBoard(
     document.getElementById('flipboard'),
     document.getElementById('tile-grid'),
+    GRID_COLS,
     GRID_ROWS,
     0
   );
 
-  const QUOTE_ROWS = 3;
+  const QUOTE_COLS = 12;
+  const QUOTE_ROWS = 4;
   const quoteBoard = makeBoard(
     document.getElementById('quote-board'),
     document.getElementById('quote-grid'),
+    QUOTE_COLS,
     QUOTE_ROWS,
     ACCENT_COLORS.length // offset so accent colors differ from the main board
   );
@@ -416,8 +419,8 @@
     }
   }
 
-  // Fit a quote onto the quote board's fixed 16×3 grid:
-  // longest line ≤ 16 chars, up to 3 lines. If the quote needs
+  // Fit a quote onto the quote board's fixed 12×4 grid:
+  // longest line ≤ 12 chars, up to 4 lines. If the quote needs
   // more than QUOTE_ROWS lines, the final line is truncated with
   // "…" so no quote is ever silently cut off.
   function wrapQuote(quote) {
@@ -425,7 +428,7 @@
     const lines = [];
     let line = '';
     for (const w of words) {
-      if (line && (line.length + 1 + w.length) > GRID_COLS) {
+      if (line && (line.length + 1 + w.length) > QUOTE_COLS) {
         lines.push(line);
         line = w;
       } else {
@@ -437,7 +440,7 @@
     if (lines.length > QUOTE_ROWS) {
       const kept = lines.slice(0, QUOTE_ROWS);
       kept[QUOTE_ROWS - 1] =
-        kept[QUOTE_ROWS - 1].slice(0, GRID_COLS - 1).trimEnd() + '…';
+        kept[QUOTE_ROWS - 1].slice(0, QUOTE_COLS - 1).trimEnd() + '…';
       lines.length = 0;
       lines.push(...kept);
     }
