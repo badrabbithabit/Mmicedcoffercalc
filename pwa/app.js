@@ -108,6 +108,21 @@
   // slider drag can never pile up unbounded overlapping flips.
   let activeFlips = 0;
   let resetSettled = false;
+  let totalTiles = 0;
+  let isResetting = true;
+
+  // The load-time cascade counts as "done" when there is nothing
+  // in flight AND every tile has been touched at least once (either
+  // it animated and settled via finish(), or it was skipped because
+  // its target matched — both cases are recorded in releaseReset).
+  const settledTiles = new Set();
+  function releaseReset() {
+    if (resetSettled || !isResetting) return;
+    if (activeFlips > 0) return;
+    if (settledTiles.size < totalTiles) return;
+    resetSettled = true;
+    isResetting = false;
+  }
 
   // ── Tile: one split-flap cell ────────────────────────────────
   function createTile() {
@@ -144,9 +159,14 @@
       pendingTimers.length = 0;
     };
     const trackTimer = (id) => { pendingTimers.push(id); };
+    const markSettled = () => {
+      settledTiles.add(el);
+      releaseReset();
+    };
 
     return {
       el,
+      markSettled,
 
       // Abort whatever animation state this tile is in, mid-flight.
       // Called when a newer setLines() supersedes an in-flight wave.
@@ -171,7 +191,10 @@
         frontSpan.textContent = char === ' ' ? '' : char;
         backSpan.textContent = '';
         front.style.backgroundColor = '';
+        // cancel() does not reset text color — a tile interrupted mid-
+        // scramble can still carry a scramble text color.
         frontSpan.style.color = isEmojiChar(char) ? EMOJI_YELLOW : '';
+        markSettled();
       },
 
       // Animate to a new character: staggered scramble + flip settle.
@@ -206,12 +229,7 @@
         const finish = () => {
           pendingFlip = false;
           activeFlips = Math.max(0, activeFlips - 1);
-          // Once the load-time cascade is the only thing in flight and
-          // it has all settled, unlock input-driven flips for real.
-          if (!resetSettled && isResetting && activeFlips === 0) {
-            resetSettled = true;
-            isResetting = false;
-          }
+          markSettled();
         };
 
         trackTimer(setTimeout(() => {
@@ -272,6 +290,7 @@
       currentGrid.push(new Array(cols).fill(' '));
       displayedGrid.push(new Array(cols).fill(' '));
     }
+    totalTiles += rows * cols;
 
     let accentIndex = accentIndexStart;
     const accentEls = [];
@@ -334,37 +353,34 @@
     // Push new text to the board. Only changed tiles animate,
     // cascading left→right, top→bottom (like a real flipboard).
     //
-    // If a previous wave is still in flight, cancel every tile in it
-    // first and cascade from what the DOM currently displays —
-    // otherwise each debounced tick during a slider drag piles a whole
-    // new flip wave on top of the one still running.
+    // In-flight tiles are NEVER cancelled here. A tile that is
+    // mid-animation already displays its OLD char, and scrambleTo()
+    // refuses to double-start while pendingFlip is set — so comparing
+    // against displayedGrid (not the target) and skipping the tile
+    // lets the existing animation keep running to the SAME final char
+    // without piling a second wave on top of it. The DOM therefore
+    // always converges to newGrid: every tile either committed
+    // instantly or is animating toward the new value.
+    //
+    // Cancelling in-flight tiles here would break the load-time
+    // cascade: the first input change arrives while it is still
+    // running, and cancelled tiles never call finish(), so
+    // activeFlips would never reach 0 and isResetting would never
+    // be released — freezing the board on stale values forever.
     const setLines = (lines) => {
       const newGrid = formatLines(lines);
-      const superseding = displayedGrid.some((row, r) =>
-        row.some((ch, c) => ch !== newGrid[r][c])
-      );
-      if (superseding) {
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            tiles[r][c].cancel();
-          }
-        }
-      }
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           if (newGrid[r][c] !== displayedGrid[r][c]) {
             const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * cols + c) * STAGGER_DELAY);
             if (!started) tiles[r][c].set(newGrid[r][c]);
-          } else if (superseding) {
-            // Same char as the incoming target but mid-flip from an
-            // older wave — show it instantly instead of re-animating.
-            tiles[r][c].set(newGrid[r][c]);
+          } else {
+            // Tile already shows the target — count it as settled for
+            // the load-time release check.
+            tiles[r][c].markSettled();
           }
         }
       }
-      // From here on the DOM converges to newGrid (each tile either
-      // committed instantly or is animating toward it), so it doubles
-      // as the new baseline for the next cascade.
       currentGrid.splice(0, currentGrid.length, ...newGrid);
       displayedGrid.splice(0, displayedGrid.length, ...newGrid);
       accentIndex++;
@@ -402,8 +418,6 @@
   const warningText = document.getElementById('warning-text');
 
   // ── Core calculation ─────────────────────────────────────────
-  let isResetting = true;
-
   function recalc(grounds) {
     if (isNaN(grounds) || grounds <= 0) {
       groundsDisplay.textContent = '—';
@@ -511,15 +525,12 @@
       return;
     }
     // Blank grid → full cascade reveal. isResetting is released by
-    // the flip-completion tracking (finish()) once every load-time
-    // animation has actually settled — not by a guessed duration.
+    // the flip-completion tracking (releaseReset()) once every
+    // load-time animation has actually settled — not by a guessed
+    // duration.
     setBoard(text);
     setQuoteBoard(wrapQuote(quoteOfToday()));
-    if (activeFlips === 0) {
-      // Nothing was queued (e.g. every target was already blank).
-      resetSettled = true;
-      isResetting = false;
-    }
+    releaseReset();
   }
 
   // Fit a quote onto the quote board's fixed 12×4 grid:
