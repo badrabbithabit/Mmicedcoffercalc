@@ -36,7 +36,23 @@
   const STAGGER_DELAY = 22;
   const SCRAMBLE_INTERVAL = 70;
   const SCRAMBLES_PER_FLIP = 9;
-  const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.·-: ☕♨️🧊📏";
+  const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.·-: ";
+
+  // Single-column glyphs only — the split-flap grid gives each character
+  // exactly one tile, so 2-column emoji (🧊 📏) would overflow and break
+  // alignment. These 1-column symbols stand in and are tinted yellow.
+  const EMOJI_FOR = {
+    grounds: '☕', // ☕ U+2615
+    hot: '♨',      // ♨ U+2668 (no variation selector → 1 col)
+    ice: '❄',      // ❄ U+2744
+    total: '▦'     // ▦ U+25A6
+  };
+  const isEmojiChar = (ch) => {
+    if (!ch || ch === ' ') return false;
+    const cp = ch.codePointAt(0);
+    return (cp >= 0x2600 && cp <= 0x27BF) || (cp >= 0x2B00 && cp <= 0x2BFF) || (cp >= 0x1F000 && cp <= 0x1FAFF);
+  };
+  const EMOJI_YELLOW = '#FFCC00';
   const SCRAMBLE_COLORS = ['#00AAFF', '#00FFCC', '#AA00FF', '#FF2D00', '#FFCC00', '#FFFFFF'];
   const ACCENT_COLORS = ['#00FF7F', '#FF4D00', '#AA00FF', '#00AAFF', '#00FFCC'];
   const MAX_QUEUED_FLIPS = 48;
@@ -132,7 +148,7 @@
         frontSpan.textContent = char === ' ' ? '' : char;
         backSpan.textContent = '';
         front.style.backgroundColor = '';
-        frontSpan.style.color = '';
+        frontSpan.style.color = isEmojiChar(char) ? EMOJI_YELLOW : '';
       },
 
       // Animate to a new character: staggered scramble + flip settle.
@@ -148,7 +164,7 @@
         const commit = () => {
           frontSpan.textContent = target === ' ' ? '' : target;
           front.style.backgroundColor = '';
-          frontSpan.style.color = '';
+          frontSpan.style.color = isEmojiChar(target) ? EMOJI_YELLOW : '';
           currentChar = target;
         };
 
@@ -351,10 +367,10 @@
 
     const boardText = [
       `COFFEE`,
-      `GROUNDS ☕${grounds}G`,
-      `HOT ♨️${hotMl}G`,
-      `ICE 🧊${iceMl}G`,
-      `TOTAL 📏${totalMl}G`
+      `GROUNDS ${EMOJI_FOR.grounds}${grounds}G`,
+      `HOT ${EMOJI_FOR.hot}${hotMl}G`,
+      `ICE ${EMOJI_FOR.ice}${iceMl}G`,
+      `TOTAL ${EMOJI_FOR.total}${totalMl}G`
     ];
 
     // Never fight the load-time reset animation.
@@ -424,10 +440,10 @@
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
     const text = [
       `COFFEE`,
-      `GROUNDS ☕${grounds}G`,
-      `HOT ♨️${Math.round(hotWater)}G`,
-      `ICE 🧊${Math.round(ice)}G`,
-      `TOTAL 📏${Math.round(totalOutput)}G`
+      `GROUNDS ${EMOJI_FOR.grounds}${grounds}G`,
+      `HOT ${EMOJI_FOR.hot}${Math.round(hotWater)}G`,
+      `ICE ${EMOJI_FOR.ice}${Math.round(ice)}G`,
+      `TOTAL ${EMOJI_FOR.total}${Math.round(totalOutput)}G`
     ];
     if (prefersReducedMotion) {
       isResetting = false;
