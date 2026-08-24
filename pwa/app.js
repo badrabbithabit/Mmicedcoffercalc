@@ -445,7 +445,7 @@
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
 
     const boardText = [
-      `COFFEE ${EMOJI_FOR.coffee}${grounds}G`,
+      `DOSE ${EMOJI_FOR.coffee}${grounds}G`,
       `HOT ${EMOJI_FOR.hot}${hotMl}G`,
       `ICE ${EMOJI_FOR.ice}${iceMl}G`,
       `TOTAL ${EMOJI_FOR.total}${totalMl}G`,
@@ -517,7 +517,7 @@
     const totalLiters = (totalOutput / 1000).toFixed(2);
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
     const text = [
-      `COFFEE ${EMOJI_FOR.coffee}${grounds}G`,
+      `DOSE ${EMOJI_FOR.coffee}${grounds}G`,
       `HOT ${EMOJI_FOR.hot}${Math.round(hotWater)}G`,
       `ICE ${EMOJI_FOR.ice}${Math.round(ice)}G`,
       `TOTAL ${EMOJI_FOR.total}${Math.round(totalOutput)}G`,
