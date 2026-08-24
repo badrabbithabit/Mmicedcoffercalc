@@ -3,8 +3,8 @@
   Coffee Ratio Calculator — index.html (Split-flap flipboard, iPhone Air)
 
   ── ID Map ──────────────────────────────────────────────────────
-    flipboard           → split-flap board (top area)
-    daily-quote         → rotating coffee quote (one per day)
+    flipboard / tile-grid   → split-flap board (top area)
+    quote-board / quote-grid → daily quote board (second board, below)
     grounds-display     → current grounds value (bottom card)
    grounds-slider      → grounds input (15-60g) — the only user input
    warning / warning-text → max-batch warning (hidden unless triggered)
@@ -34,8 +34,12 @@
       </div>
     </main>
 
-    <!-- DAILY QUOTE — one coffee quote per day -->
-    <p class="daily-quote" id="daily-quote" aria-label="Coffee quote of the day"></p>
+    <!-- DAILY QUOTE — one coffee quote per day, on its own board -->
+    <section class="quote-zone" aria-label="Coffee quote of the day">
+      <div class="board board-quote" id="quote-board" role="status" aria-live="polite">
+        <div class="tile-grid" id="quote-grid"></div>
+      </div>
+    </section>
 
     <!-- CONTROLS — bottom third (NOT flipboard style) -->
     <section class="controls">

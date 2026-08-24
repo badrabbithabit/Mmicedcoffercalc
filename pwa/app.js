@@ -56,7 +56,7 @@
     'May your coffee be strong.',
     'Coffee: because you can.',
     'First coffee, then problems.',
-    'If you like coffee, you will like it for life.',
+    'Coffee: a taste for life.',
     'Coffee is a hug for your stomach.',
     'The best way to start is to drink coffee.',
     'No coffee, no show.',
@@ -65,27 +65,25 @@
     'Sweetness is a habit. Coffee is a necessity.',
     'Coffee first, questions later.',
     'Talk is cheap. Coffee is free.',
-    'A day without coffee is, to me, a day wasted.',
+    'No coffee, no good day.',
     'Coffee is the elixir of life.',
     'My heart beats like a coffee grinder.',
-    'Espresso: for when your life is a cup of despair.',
+    'Espresso for dark days.',
     'Coffee is life in a cup.',
     'The coffee is my best friend.',
-    'There is no problem that coffee cannot solve.',
+    'Coffee solves problems.',
     'Coffee first, then conquer the world.',
     'I run on coffee and deadlines.',
     'Coffee is my love language.',
     'Problems are easier with coffee in hand.'
   ];
 
-  const quoteEl = document.getElementById('daily-quote');
-  if (quoteEl) {
+  const quoteOfToday = () => {
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
     const dayOfYear = Math.floor((now - start) / 86400000);
-    const quote = QUOTES[dayOfYear % QUOTES.length];
-    quoteEl.textContent = `\u201C${quote}\u201D`;
-  }
+    return QUOTES[dayOfYear % QUOTES.length];
+  };
 
   // ── Animation queue cap ──────────────────────────────────────
   // Counts every tile animation that is queued or running
@@ -193,77 +191,96 @@
     };
   }
 
-  // ── Board: grid of tiles + transition orchestration ──────────
-  const boardZone = document.getElementById('flipboard');
-  const gridEl = document.getElementById('tile-grid');
-  gridEl.style.setProperty('--grid-cols', GRID_COLS);
-  gridEl.style.setProperty('--grid-rows', GRID_ROWS);
+  // ── Boards: grid of tiles + transition orchestration ─────────
+  function makeBoard(zoneEl, gridEl, rows, accentIndexStart) {
+    gridEl.style.setProperty('--grid-cols', GRID_COLS);
+    gridEl.style.setProperty('--grid-rows', rows);
 
-  const tiles = [];
-  const currentGrid = [];
-  for (let r = 0; r < GRID_ROWS; r++) {
-    const row = [];
-    for (let c = 0; c < GRID_COLS; c++) {
-      const t = createTile();
-      t.set(' ');
-      gridEl.appendChild(t.el);
-      row.push(t);
-    }
-    tiles.push(row);
-    currentGrid.push(new Array(GRID_COLS).fill(' '));
-  }
-
-  let accentIndex = 0;
-  const accentEls = [];
-  for (const side of ['accent-bar-left', 'accent-bar-right']) {
-    const bar = document.createElement('div');
-    bar.className = 'accent-bar ' + side;
-    const segA = document.createElement('div');
-    segA.className = 'accent-segment';
-    const segB = document.createElement('div');
-    segB.className = 'accent-segment';
-    bar.appendChild(segA);
-    bar.appendChild(segB);
-    boardZone.appendChild(bar);
-    accentEls.push(segA, segB);
-  }
-  const paintAccents = () => {
-    const color = ACCENT_COLORS[accentIndex % ACCENT_COLORS.length];
-    accentEls.forEach(seg => { seg.style.backgroundColor = color; });
-  };
-  paintAccents();
-
-  function formatLines(lines) {
-    const grid = [];
-    for (let r = 0; r < GRID_ROWS; r++) {
-      const line = (lines[r] || '').toUpperCase();
-      const padTotal = GRID_COLS - line.length;
-      const padLeft = Math.max(0, Math.floor(padTotal / 2));
-      const padded = ' '.repeat(padLeft) + line +
-        ' '.repeat(Math.max(0, GRID_COLS - padLeft - line.length));
-      grid.push(padded.split(''));
-    }
-    return grid;
-  }
-
-  // Push new text to the board. Only changed tiles animate,
-  // cascading left→right, top→bottom (like a real flipboard).
-  // Tiles that hit the MAX_QUEUED_FLIPS cap are set instantly
-  // so the board always ends on the right values.
-  function setBoard(lines) {
-    const newGrid = formatLines(lines);
-    for (let r = 0; r < GRID_ROWS; r++) {
+    const tiles = [];
+    const currentGrid = [];
+    for (let r = 0; r < rows; r++) {
+      const row = [];
       for (let c = 0; c < GRID_COLS; c++) {
-        if (newGrid[r][c] !== currentGrid[r][c]) {
-          const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * GRID_COLS + c) * STAGGER_DELAY);
-          if (!started) tiles[r][c].set(newGrid[r][c]);
+        const t = createTile();
+        t.set(' ');
+        gridEl.appendChild(t.el);
+        row.push(t);
+      }
+      tiles.push(row);
+      currentGrid.push(new Array(GRID_COLS).fill(' '));
+    }
+
+    let accentIndex = accentIndexStart;
+    const accentEls = [];
+    for (const side of ['accent-bar-left', 'accent-bar-right']) {
+      const bar = document.createElement('div');
+      bar.className = 'accent-bar ' + side;
+      const segA = document.createElement('div');
+      segA.className = 'accent-segment';
+      const segB = document.createElement('div');
+      segB.className = 'accent-segment';
+      bar.appendChild(segA);
+      bar.appendChild(segB);
+      zoneEl.appendChild(bar);
+      accentEls.push(segA, segB);
+    }
+    const paintAccents = () => {
+      const color = ACCENT_COLORS[accentIndex % ACCENT_COLORS.length];
+      accentEls.forEach(seg => { seg.style.backgroundColor = color; });
+    };
+    paintAccents();
+
+    const formatLines = (lines) => {
+      const grid = [];
+      for (let r = 0; r < rows; r++) {
+        const line = (lines[r] || '').toUpperCase();
+        const padTotal = GRID_COLS - line.length;
+        const padLeft = Math.max(0, Math.floor(padTotal / 2));
+        const padded = ' '.repeat(padLeft) + line +
+          ' '.repeat(Math.max(0, GRID_COLS - padLeft - line.length));
+        grid.push(padded.split(''));
+      }
+      return grid;
+    };
+
+    // Push new text to the board. Only changed tiles animate,
+    // cascading left→right, top→bottom (like a real flipboard).
+    // Tiles that hit the MAX_QUEUED_FLIPS cap are set instantly
+    // so the board always ends on the right values.
+    const setLines = (lines) => {
+      const newGrid = formatLines(lines);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < GRID_COLS; c++) {
+          if (newGrid[r][c] !== currentGrid[r][c]) {
+            const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * GRID_COLS + c) * STAGGER_DELAY);
+            if (!started) tiles[r][c].set(newGrid[r][c]);
+          }
         }
       }
-    }
-    currentGrid.splice(0, currentGrid.length, ...newGrid);
-    accentIndex++;
-    paintAccents();
+      currentGrid.splice(0, currentGrid.length, ...newGrid);
+      accentIndex++;
+      paintAccents();
+    };
+
+    return { setLines, rows };
   }
+
+  const board = makeBoard(
+    document.getElementById('flipboard'),
+    document.getElementById('tile-grid'),
+    GRID_ROWS,
+    0
+  );
+
+  const QUOTE_ROWS = 3;
+  const quoteBoard = makeBoard(
+    document.getElementById('quote-board'),
+    document.getElementById('quote-grid'),
+    QUOTE_ROWS,
+    ACCENT_COLORS.length // offset so accent colors differ from the main board
+  );
+  const setBoard = (lines) => board.setLines(lines);
+  const setQuoteBoard = (lines) => quoteBoard.setLines(lines);
 
   // ── DOM refs ─────────────────────────────────────────────────
   const groundsSlider = document.getElementById('grounds-slider');
@@ -375,12 +392,44 @@
     if (prefersReducedMotion) {
       isResetting = false;
       setBoard(text);
+      setQuoteBoard(wrapQuote(quoteOfToday()));
       return;
     }
     // Blank grid → full cascade reveal.
     setBoard(text);
+    setQuoteBoard(wrapQuote(quoteOfToday()));
     const cascadeMs = (GRID_ROWS * GRID_COLS) * STAGGER_DELAY + FLIP_DURATION + SCRAMBLES_PER_FLIP * SCRAMBLE_INTERVAL + 100;
     setTimeout(() => { isResetting = false; }, cascadeMs);
+  }
+
+  // Fit a quote onto the quote board's fixed 16×3 grid:
+  // longest line ≤ 16 chars, up to 3 lines. If the quote needs
+  // more than QUOTE_ROWS lines, the final line is truncated with
+  // "…" so no quote is ever silently cut off.
+  function wrapQuote(quote) {
+    const words = quote.toUpperCase().split(' ');
+    const lines = [];
+    let line = '';
+    for (const w of words) {
+      if (line && (line.length + 1 + w.length) > GRID_COLS) {
+        lines.push(line);
+        line = w;
+      } else {
+        line = line ? line + ' ' + w : w;
+      }
+    }
+    if (line) lines.push(line);
+
+    if (lines.length > QUOTE_ROWS) {
+      const kept = lines.slice(0, QUOTE_ROWS);
+      kept[QUOTE_ROWS - 1] =
+        kept[QUOTE_ROWS - 1].slice(0, GRID_COLS - 1).trimEnd() + '…';
+      lines.length = 0;
+      lines.push(...kept);
+    }
+
+    while (lines.length < QUOTE_ROWS) lines.push(' ');
+    return lines.slice(0, QUOTE_ROWS);
   }
 
   // ── Wiring ───────────────────────────────────────────────────
