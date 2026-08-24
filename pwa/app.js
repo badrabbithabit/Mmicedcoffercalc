@@ -133,17 +133,40 @@
 
     let currentChar = ' ';
     let scrambleTimer = null;
+    let pendingFlip = false;
+    const pendingTimers = [];
 
     const clearScramble = () => {
       if (scrambleTimer) { clearInterval(scrambleTimer); scrambleTimer = null; }
     };
+    const clearPendingTimers = () => {
+      pendingTimers.forEach(clearTimeout);
+      pendingTimers.length = 0;
+    };
+    const trackTimer = (id) => { pendingTimers.push(id); };
 
     return {
       el,
 
+      // Abort whatever animation state this tile is in, mid-flight.
+      // Called when a newer setLines() supersedes an in-flight wave.
+      cancel() {
+        clearScramble();
+        clearPendingTimers();
+        if (pendingFlip) {
+          pendingFlip = false;
+          activeFlips = Math.max(0, activeFlips - 1);
+        }
+        el.classList.remove('scrambling');
+        inner.style.transition = '';
+        inner.style.transform = '';
+        front.style.backgroundColor = '';
+        backSpan.textContent = '';
+      },
+
       // Set a character with no animation.
       set(char) {
-        clearScramble();
+        this.cancel();
         currentChar = char;
         frontSpan.textContent = char === ' ' ? '' : char;
         backSpan.textContent = '';
@@ -157,9 +180,14 @@
       scrambleTo(target, delay) {
         if (target === currentChar) return false;
 
+        // A newer setLines() cancelled our previous wave; this call is
+        // part of the replacement wave and must not start on top of it.
+        if (pendingFlip) return false;
+
         if (activeFlips >= MAX_QUEUED_FLIPS) return false;
 
         clearScramble();
+        pendingFlip = true;
 
         const commit = () => {
           frontSpan.textContent = target === ' ' ? '' : target;
@@ -168,10 +196,15 @@
           currentChar = target;
         };
 
-        if (prefersReducedMotion) { commit(); return true; }
+        if (prefersReducedMotion) {
+          pendingFlip = false;
+          commit();
+          return true;
+        }
 
         activeFlips++;
         const finish = () => {
+          pendingFlip = false;
           activeFlips = Math.max(0, activeFlips - 1);
           // Once the load-time cascade is the only thing in flight and
           // it has all settled, unlock input-driven flips for real.
@@ -181,7 +214,7 @@
           }
         };
 
-        setTimeout(() => {
+        trackTimer(setTimeout(() => {
           el.classList.add('scrambling');
           let count = 0;
           scrambleTimer = setInterval(() => {
@@ -196,21 +229,21 @@
               // Flip settle: hinge the card, then land on the final char.
               inner.style.transition = `transform ${FLIP_DURATION / 2}ms ease-in`;
               inner.style.transform = 'perspective(400px) rotateX(-88deg)';
-              setTimeout(() => {
+              trackTimer(setTimeout(() => {
                 commit();
                 backSpan.textContent = target === ' ' ? '' : target;
                 inner.style.transition = `transform ${FLIP_DURATION / 2}ms ease-out`;
                 inner.style.transform = '';
-                setTimeout(() => {
+                trackTimer(setTimeout(() => {
                   backSpan.textContent = '';
                   inner.style.transition = '';
                   el.classList.remove('scrambling');
                   finish();
-                }, FLIP_DURATION / 2);
-              }, FLIP_DURATION / 2);
+                }, FLIP_DURATION / 2));
+              }, FLIP_DURATION / 2));
             }
           }, SCRAMBLE_INTERVAL);
-        }, delay);
+        }, delay));
         return true;
       }
     };
@@ -223,6 +256,10 @@
 
     const tiles = [];
     const currentGrid = [];
+    // What the DOM actually shows right now. Tiles that are mid-flip
+    // still display their OLD char, so a new cascade must start from
+    // this grid — comparing against the target would double-start.
+    const displayedGrid = [];
     for (let r = 0; r < rows; r++) {
       const row = [];
       for (let c = 0; c < cols; c++) {
@@ -233,6 +270,7 @@
       }
       tiles.push(row);
       currentGrid.push(new Array(cols).fill(' '));
+      displayedGrid.push(new Array(cols).fill(' '));
     }
 
     let accentIndex = accentIndexStart;
@@ -295,19 +333,40 @@
 
     // Push new text to the board. Only changed tiles animate,
     // cascading left→right, top→bottom (like a real flipboard).
-    // Tiles that hit the MAX_QUEUED_FLIPS cap are set instantly
-    // so the board always ends on the right values.
+    //
+    // If a previous wave is still in flight, cancel every tile in it
+    // first and cascade from what the DOM currently displays —
+    // otherwise each debounced tick during a slider drag piles a whole
+    // new flip wave on top of the one still running.
     const setLines = (lines) => {
       const newGrid = formatLines(lines);
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (newGrid[r][c] !== currentGrid[r][c]) {
-            const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * cols + c) * STAGGER_DELAY);
-            if (!started) tiles[r][c].set(newGrid[r][c]);
+      const superseding = displayedGrid.some((row, r) =>
+        row.some((ch, c) => ch !== newGrid[r][c])
+      );
+      if (superseding) {
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            tiles[r][c].cancel();
           }
         }
       }
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (newGrid[r][c] !== displayedGrid[r][c]) {
+            const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * cols + c) * STAGGER_DELAY);
+            if (!started) tiles[r][c].set(newGrid[r][c]);
+          } else if (superseding) {
+            // Same char as the incoming target but mid-flip from an
+            // older wave — show it instantly instead of re-animating.
+            tiles[r][c].set(newGrid[r][c]);
+          }
+        }
+      }
+      // From here on the DOM converges to newGrid (each tile either
+      // committed instantly or is animating toward it), so it doubles
+      // as the new baseline for the next cascade.
       currentGrid.splice(0, currentGrid.length, ...newGrid);
+      displayedGrid.splice(0, displayedGrid.length, ...newGrid);
       accentIndex++;
       paintAccents();
     };
