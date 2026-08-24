@@ -22,7 +22,7 @@
  *      (so subsequent offline loads get fresh content)
  */
 
-const CACHE_NAME = 'coffee-ratio-v4';
+const CACHE_NAME = 'coffee-ratio-v5';
 const ASSETS_TO_CACHE = [
   'index.html',
   'styles.css',

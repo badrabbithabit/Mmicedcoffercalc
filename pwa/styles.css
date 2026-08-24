@@ -36,12 +36,12 @@
   --font-display: -apple-system, BlinkMacSystemFont, system-ui, "SF Pro Display", "Segoe UI", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
 
-  /* Board / tile sizing — 10 columns, sized to leave room for generous
+  /* Board / tile sizing — 11 columns, sized to leave room for generous
      padding inside the board AND still fit the iPhone Air width. */
-  --tile-size: clamp(24px, 7.4vw, 54px);
+  --tile-size: clamp(22px, 6.9vw, 50px);
   --tile-gap: clamp(2px, 0.4vw, 4px);
-  --board-pad-x: clamp(20px, 5.5vw, 40px);
-  --board-pad-y: clamp(18px, 4vw, 32px);
+  --board-pad-x: clamp(18px, 5vw, 36px);
+  --board-pad-y: clamp(16px, 3.6vw, 30px);
   --brand: #ffb424;
 }
 
@@ -196,7 +196,10 @@ body {
 
 .tile-front span,
 .tile-back span {
-  font-size: calc(var(--tile-size) * 0.62);
+  /* One shared font-size for EVERY cell (letters, digits, glyphs) so the
+     line-box height is identical everywhere — this is what keeps the emoji
+     on the same optical baseline as the text next to them. */
+  font-size: calc(var(--tile-size) * 0.6);
   font-weight: 700;
   color: #fff;
   text-transform: uppercase;
@@ -208,15 +211,13 @@ body {
 .tile-back { transform: rotateX(180deg); }
 
 /* Non-flipboard glyphs (☕ ♨ ❄ ▦ + the "G" unit): no mechanical seam,
-   dead-centre. Crucially they render in the SAME monospace stack as the
-   digits (not the system emoji font) so each glyph occupies exactly one
-   fixed-width cell — otherwise the wider emoji spill into the next cell
-   and the whole row drifts out of alignment. */
+   dead-centre. They render in a monospace stack (not the system emoji
+   font) so each glyph occupies exactly one fixed-width cell. The font-size
+   is the SAME as the text spans (no override here) so every cell shares one
+   line-box height and the emoji sit on the same baseline as the letters. */
 .tile-front.static-glyph { display: flex; align-items: center; justify-content: center; }
 .tile-front.static-glyph::after { display: none; }
 .tile-front.static-glyph span {
-  font-size: calc(var(--tile-size) * 0.66);
-  line-height: 1;
   text-transform: none;
   font-family: 'Courier New', Courier, ui-monospace, Menlo, monospace;
   letter-spacing: 0;

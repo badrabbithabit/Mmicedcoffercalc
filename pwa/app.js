@@ -30,7 +30,7 @@
   const ICE_PERCENT = 40;  // 40% ice / 60% hot water split
 
   // ── Split-flap display constants (flipoff-inspired) ───────────
-  const GRID_COLS = 10;
+  const GRID_COLS = 11;
   const GRID_ROWS = 3;
   const FLIP_DURATION = 260;
   const STAGGER_DELAY = 22;
@@ -405,7 +405,7 @@
     'justify' // labels left, values right
   );
 
-  const QUOTE_COLS = 10;
+  const QUOTE_COLS = 11;
   const QUOTE_ROWS = 4;
   const quoteBoard = makeBoard(
     document.getElementById('quote-board'),
