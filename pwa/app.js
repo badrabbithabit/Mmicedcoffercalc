@@ -30,28 +30,27 @@
   const ICE_PERCENT = 40;  // 40% ice / 60% hot water split
 
   // ── Split-flap display constants (flipoff-inspired) ───────────
-  const GRID_COLS = 13;
-  const GRID_ROWS = 5;
+  const GRID_COLS = 10;
+  const GRID_ROWS = 3;
   const FLIP_DURATION = 260;
   const STAGGER_DELAY = 22;
   const SCRAMBLE_INTERVAL = 70;
   const SCRAMBLES_PER_FLIP = 9;
   const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.·-: ";
 
-  // Single-column glyphs only — the split-flap grid gives each character
-  // exactly one tile, so 2-column emoji (🧊 📏) would overflow and break
-  // alignment. These 1-column symbols stand in and are tinted yellow.
+  // Row glyphs. These are rendered as STATIC tiles (no flip/scramble) so
+  // they stay vertically centred and never jitter during a transition.
   const EMOJI_FOR = {
-    grounds: '☕', // ☕ U+2615
-    hot: '♨',      // ♨ U+2668 (no variation selector → 1 col)
+    coffee: '☕', // ☕ U+2615
+    hot: '♨',      // ♨ U+2668
     ice: '❄',      // ❄ U+2744
     total: '▦'     // ▦ U+25A6
   };
-  const isEmojiChar = (ch) => {
-    if (!ch || ch === ' ') return false;
-    const cp = ch.codePointAt(0);
-    return (cp >= 0x2600 && cp <= 0x27BF) || (cp >= 0x2B00 && cp <= 0x2BFF) || (cp >= 0x1F000 && cp <= 0x1FAFF);
-  };
+  // Static (non-flipboard) tiles — emoji and the "G" unit.
+  const STATIC_EMOJI = new Set(Object.values(EMOJI_FOR));
+  const STATIC_UNIT = 'G';
+  const isEmojiChar = (ch) => STATIC_EMOJI.has(ch);
+  const isStaticChar = (ch) => isEmojiChar(ch) || ch === STATIC_UNIT;
   const EMOJI_YELLOW = '#FFCC00';
   const SCRAMBLE_COLORS = ['#00AAFF', '#00FFCC', '#AA00FF', '#FF2D00', '#FFCC00', '#FFFFFF'];
   const ACCENT_COLORS = ['#00FF7F', '#FF4D00', '#AA00FF', '#00AAFF', '#00FFCC'];
@@ -193,7 +192,9 @@
         front.style.backgroundColor = '';
         // cancel() does not reset text color — a tile interrupted mid-
         // scramble can still carry a scramble text color.
+        const staticGlyph = isStaticChar(char);
         frontSpan.style.color = isEmojiChar(char) ? EMOJI_YELLOW : '';
+        front.classList.toggle('static-glyph', staticGlyph);
         markSettled();
       },
 
@@ -215,7 +216,9 @@
         const commit = () => {
           frontSpan.textContent = target === ' ' ? '' : target;
           front.style.backgroundColor = '';
+          const staticGlyph = isStaticChar(target);
           frontSpan.style.color = isEmojiChar(target) ? EMOJI_YELLOW : '';
+          front.classList.toggle('static-glyph', staticGlyph);
           currentChar = target;
         };
 
@@ -320,10 +323,7 @@
         const pad = Math.max(0, cols - chars.length);
         let paddedChars;
         if (justify === 'justify') {
-          // Push the trailing value flush to the right edge:
-          //   "LABEL VALUE" → LABEL left, VALUE right
-          //   "LABEL EMOJI VALUE" → LABEL EMOJI left, VALUE right
-          // The leading space is the split point (value = last word).
+          // LABEL left, VALUE (digits + G) flush right.
           const sp = line.lastIndexOf(' ');
           if (sp > 0) {
             const leftChars = Array.from(line.slice(0, sp));
@@ -331,7 +331,6 @@
             const gap = Math.max(0, cols - leftChars.length - valueChars.length);
             paddedChars = leftChars.concat(Array(gap).fill(' '), valueChars);
           } else {
-            // No value — just left-align (e.g. the COFFEE title).
             paddedChars = chars.concat(Array(Math.max(0, cols - chars.length)).fill(' '));
           }
         } else {
@@ -371,9 +370,16 @@
       const newGrid = formatLines(lines);
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          if (newGrid[r][c] !== displayedGrid[r][c]) {
-            const started = tiles[r][c].scrambleTo(newGrid[r][c], (r * cols + c) * STAGGER_DELAY);
-            if (!started) tiles[r][c].set(newGrid[r][c]);
+          const target = newGrid[r][c];
+          if (target !== displayedGrid[r][c]) {
+            // Non-flipboard glyphs (emoji + the "G" unit) snap into place
+            // instantly — they must not scramble or flip.
+            if (isStaticChar(target)) {
+              tiles[r][c].set(target);
+            } else {
+              const started = tiles[r][c].scrambleTo(target, (r * cols + c) * STAGGER_DELAY);
+              if (!started) tiles[r][c].set(target);
+            }
           } else {
             // Tile already shows the target — count it as settled for
             // the load-time release check.
@@ -396,10 +402,10 @@
     GRID_COLS,
     GRID_ROWS,
     0,
-    'justify' // titles left, values right
+    'justify' // labels left, values right
   );
 
-  const QUOTE_COLS = 13;
+  const QUOTE_COLS = 10;
   const QUOTE_ROWS = 4;
   const quoteBoard = makeBoard(
     document.getElementById('quote-board'),
@@ -439,11 +445,10 @@
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
 
     const boardText = [
-      `COFFEE`,
-      `GROUNDS ${EMOJI_FOR.grounds}${grounds}G`,
+      `COFFEE ${EMOJI_FOR.coffee}${grounds}G`,
       `HOT ${EMOJI_FOR.hot}${hotMl}G`,
       `ICE ${EMOJI_FOR.ice}${iceMl}G`,
-      `TOTAL ${EMOJI_FOR.total}${totalMl}G`
+      `TOTAL ${EMOJI_FOR.total}${totalMl}G`,
     ];
 
     // Never fight the load-time reset animation.
@@ -512,11 +517,10 @@
     const totalLiters = (totalOutput / 1000).toFixed(2);
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
     const text = [
-      `COFFEE`,
-      `GROUNDS ${EMOJI_FOR.grounds}${grounds}G`,
+      `COFFEE ${EMOJI_FOR.coffee}${grounds}G`,
       `HOT ${EMOJI_FOR.hot}${Math.round(hotWater)}G`,
       `ICE ${EMOJI_FOR.ice}${Math.round(ice)}G`,
-      `TOTAL ${EMOJI_FOR.total}${Math.round(totalOutput)}G`
+      `TOTAL ${EMOJI_FOR.total}${Math.round(totalOutput)}G`,
     ];
     if (prefersReducedMotion) {
       isResetting = false;
