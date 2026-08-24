@@ -43,6 +43,49 @@
   const prefersReducedMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // ── Daily rotating coffee quote ──────────────────────────────
+  const QUOTES = [
+    'Coffee keeps the demons away.',
+    'All things being equal, coffee is better.',
+    'Good coffee is only a cup away.',
+    'Coffee is a language in itself.',
+    'The ideal life is books and coffee.',
+    'Life begins after coffee.',
+    'But first, coffee.',
+    'May your coffee be strong.',
+    'Coffee: because you can.',
+    'First coffee, then problems.',
+    'If you like coffee, you will like it for life.',
+    'Coffee is a hug for your stomach.',
+    'The best way to start is to drink coffee.',
+    'No coffee, no show.',
+    'Coffee breaks the tension.',
+    'Coffee is my therapy.',
+    'Sweetness is a habit. Coffee is a necessity.',
+    'Coffee first, questions later.',
+    'Talk is cheap. Coffee is free.',
+    'A day without coffee is, to me, a day wasted.',
+    'Coffee is the elixir of life.',
+    'My heart beats like a coffee grinder.',
+    'Espresso: for when your life is a cup of despair.',
+    'Coffee is life in a cup.',
+    'The coffee is my best friend.',
+    'There is no problem that coffee cannot solve.',
+    'Coffee first, then conquer the world.',
+    'I run on coffee and deadlines.',
+    'Coffee is my love language.',
+    'Problems are easier with coffee in hand.'
+  ];
+
+  const quoteEl = document.getElementById('daily-quote');
+  if (quoteEl) {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((now - start) / 86400000);
+    const quote = QUOTES[dayOfYear % QUOTES.length];
+    quoteEl.textContent = `\u201C${quote}\u201D`;
+  }
+
   // ── Tile: one split-flap cell ────────────────────────────────
   function createTile() {
     const el = document.createElement('div');
@@ -220,21 +263,22 @@
 
     groundsDisplay.textContent = `${grounds} g`;
 
-    const hotPercent = 100 - ICE_PERCENT;
+     const hotPercent = 100 - ICE_PERCENT;
     const totalWater = grounds * BREW_RATIO;
     const hotWater = totalWater * (hotPercent / 100);
     const ice = totalWater * (ICE_PERCENT / 100);
     const totalOutput = hotWater + ice;
 
-    const totalLiters = (totalOutput / 1000).toFixed(2);
+    const hotMl = Math.round(hotWater);
+    const iceMl = Math.round(ice);
+    const totalMl = Math.round(totalOutput);
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
 
     const boardText = [
-      `TOTAL ${totalLiters}L`,
-      `${totalCups} US CUPS`,
-      `HOT ${totalLiters}L`,
-      `ICE ${ice.toFixed(0)} G`,
-      `1:${BREW_RATIO}  ${grounds}G GND`
+      `HOT ${hotMl} ML`,
+      `ICE ${iceMl} G`,
+      `TOTAL ${totalMl} ML`,
+      `${totalCups} US CUPS`
     ];
 
     // Never fight the load-time reset animation.
@@ -303,11 +347,10 @@
     const totalLiters = (totalOutput / 1000).toFixed(2);
     const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
     const text = [
-      `TOTAL ${totalLiters}L`,
-      `${totalCups} US CUPS`,
-      `HOT ${totalLiters}L`,
-      `ICE ${ice.toFixed(0)} G`,
-      `1:${BREW_RATIO}  ${grounds}G GND`
+      `HOT ${Math.round(hotWater)} ML`,
+      `ICE ${Math.round(ice)} G`,
+      `TOTAL ${Math.round(totalOutput)} ML`,
+      `${totalCups} US CUPS`
     ];
     if (prefersReducedMotion) {
       isResetting = false;

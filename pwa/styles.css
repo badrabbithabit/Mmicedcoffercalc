@@ -37,7 +37,7 @@
   --font-body: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
 
   /* Board / tile sizing — fits 16 columns inside iPhone Air width */
-  --tile-size: clamp(24px, 5.4vw, 46px);
+  --tile-size: clamp(26px, 5.8vw, 46px);
   --tile-gap: clamp(2px, 0.4vw, 4px);
   --board-pad-x: clamp(14px, 4vw, 28px);
   --board-pad-y: clamp(14px, 3vw, 24px);
@@ -157,7 +157,7 @@ body {
 
 .tile-front span,
 .tile-back span {
-  font-size: calc(var(--tile-size) * 0.52);
+  font-size: calc(var(--tile-size) * 0.62);
   font-weight: 700;
   color: #fff;
   text-transform: uppercase;
@@ -277,6 +277,20 @@ body {
   letter-spacing: 0.04em;
 }
 
+/* Daily coffee quote */
+.daily-quote {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0 1.25rem 0.15rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-tertiary);
+  text-align: center;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  min-height: 1.2em;
+}
+
 /* Warning banner */
 .warning {
   display: flex;
@@ -301,7 +315,7 @@ input::-webkit-outer-spin, input::-webkit-inner-spin { margin: 0; opacity: 0; }
 
 /* Small screens */
 @media (max-width: 360px) {
-  :root { --tile-size: 5.2vw; }
+  :root { --tile-size: 5.6vw; }
   .control-value { font-size: 1.35rem; }
 }
 
