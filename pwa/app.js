@@ -124,7 +124,7 @@
   }
 
   // ── Tile: one split-flap cell ────────────────────────────────
-  function createTile() {
+  function createTile(hideBlanks = false) {
     const el = document.createElement('div');
     el.className = 'tile';
 
@@ -288,7 +288,7 @@
     for (let r = 0; r < rows; r++) {
       const row = [];
       for (let c = 0; c < cols; c++) {
-        const t = createTile();
+        const t = createTile(hideBlanks);
         t.set(' ');
         gridEl.appendChild(t.el);
         row.push(t);
