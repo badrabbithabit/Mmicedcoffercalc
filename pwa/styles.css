@@ -73,14 +73,23 @@ body {
 }
 
 /* ── Flipboard (top) ──────────────────────────────────────────── */
+/* Both boards sit together at the top with equal spacing. The
+   .board-spacer below absorbs all leftover vertical space so the
+   quote board is NOT pushed down toward the controls. */
 .flipboard-zone {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 0;
-  padding: 0.5rem 0.5rem 0;
+  padding: 0.5rem 0.5rem;
   overflow: hidden;
+}
+
+/* Absorbs leftover space — keeps both boards grouped at the top */
+.board-spacer {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .board {
@@ -280,7 +289,7 @@ body {
   flex: 0 0 auto;
   display: flex;
   justify-content: center;
-  padding: 0 0.5rem 0.5rem;
+  padding: 0.5rem 0.5rem;
   min-height: 0;
 }
 
