@@ -211,9 +211,7 @@
   // ── Core calculation ─────────────────────────────────────────
   let isResetting = true;
 
-  function calculate() {
-    const grounds = parseInt(groundsSlider.value, 10);
-
+  function recalc(grounds) {
     if (isNaN(grounds) || grounds <= 0) {
       groundsDisplay.textContent = '—';
       warningEl.hidden = true;
@@ -250,6 +248,49 @@
     }
   }
 
+  let boardDebounce = null;
+  function calculate() {
+    const grounds = parseInt(groundsSlider.value, 10);
+
+    if (isNaN(grounds) || grounds <= 0) {
+      groundsDisplay.textContent = '—';
+      warningEl.hidden = true;
+      return;
+    }
+
+    groundsDisplay.textContent = `${grounds} g`;
+
+    const hotPercent = 100 - ICE_PERCENT;
+    const totalWater = grounds * BREW_RATIO;
+    const hotWater = totalWater * (hotPercent / 100);
+    const ice = totalWater * (ICE_PERCENT / 100);
+    const totalOutput = hotWater + ice;
+
+    if (totalOutput > MAX_BATCH_GRAMS) {
+      warningEl.hidden = false;
+      warningText.textContent = 'Total exceeds 1 L max batch. Reduce grounds.';
+    } else {
+      warningEl.hidden = true;
+    }
+
+    // Debounce the flipboard: slider input fires on every tick while
+    // dragging, which would queue up a flip animation per value.
+    // Wait for the user to pause (or release) before animating.
+    if (boardDebounce) clearTimeout(boardDebounce);
+    boardDebounce = setTimeout(() => {
+      boardDebounce = null;
+      recalc(grounds);
+    }, 140);
+  }
+
+  function flushBoard() {
+    if (boardDebounce) {
+      clearTimeout(boardDebounce);
+      boardDebounce = null;
+      recalc(parseInt(groundsSlider.value, 10));
+    }
+  }
+
   // ── Load-time flipboard reset animation ─────────────────────
   // Board starts blank; on load every tile flips in with a staggered
   // cascade to reveal the recipe, then input changes animate normally.
@@ -281,5 +322,6 @@
 
   // ── Wiring ───────────────────────────────────────────────────
   groundsSlider.addEventListener('input', calculate);
+  groundsSlider.addEventListener('change', flushBoard);
   runResetAnimation();
 })();
