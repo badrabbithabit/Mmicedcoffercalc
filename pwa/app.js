@@ -323,13 +323,27 @@
         const pad = Math.max(0, cols - chars.length);
         let paddedChars;
         if (justify === 'justify') {
-          // LABEL left, VALUE (digits + G) flush right.
-          const sp = line.lastIndexOf(' ');
-          if (sp > 0) {
-            const leftChars = Array.from(line.slice(0, sp));
-            const valueChars = Array.from(line.slice(sp + 1));
-            const gap = Math.max(0, cols - leftChars.length - valueChars.length);
-            paddedChars = leftChars.concat(Array(gap).fill(' '), valueChars);
+          // Layout for a data row, "LABEL EMOJI VALUE" (chars = the row split
+          // into Unicode code points, so a 2-unit emoji still counts as ONE
+          // cell). The single space sits between LABEL and EMOJI; there is no
+          // space before the value.
+          //   cols 1..5  → LABEL (left-aligned)
+          //   col  6     → EMOJI  (pinned to column 6 for every row)
+          //   cols 7..11 → VALUE (digits + G), right-aligned
+          const spIdx = chars.indexOf(' ');
+          if (spIdx > 0) {
+            const label = chars.slice(0, spIdx);
+            const emoji = chars.slice(spIdx + 1, spIdx + 2);
+            const value = chars.slice(spIdx + 2);
+            // Emoji at col 6 (index 5) → pad the label to exactly 5 wide.
+            const labelPad = Math.max(0, 5 - label.length);
+            // Value zone is cols 7..11 (5 wide); right-align within it.
+            const valuePad = Math.max(0, 5 - value.length);
+            paddedChars = label
+              .concat(Array(labelPad).fill(' '),
+                emoji,
+                Array(valuePad).fill(' '),
+                value);
           } else {
             paddedChars = chars.concat(Array(Math.max(0, cols - chars.length)).fill(' '));
           }
