@@ -187,7 +187,8 @@
       set(char) {
         this.cancel();
         currentChar = char;
-        frontSpan.textContent = char === ' ' ? '' : char;
+        const blank = char === ' ';
+        frontSpan.textContent = blank ? '' : char;
         backSpan.textContent = '';
         front.style.backgroundColor = '';
         // cancel() does not reset text color — a tile interrupted mid-
@@ -195,6 +196,7 @@
         const staticGlyph = isStaticChar(char);
         frontSpan.style.color = isEmojiChar(char) ? EMOJI_YELLOW : '';
         front.classList.toggle('static-glyph', staticGlyph);
+        el.classList.toggle('tile--blank', blank);
         markSettled();
       },
 
@@ -214,11 +216,13 @@
         pendingFlip = true;
 
         const commit = () => {
-          frontSpan.textContent = target === ' ' ? '' : target;
+          const blank = target === ' ';
+          frontSpan.textContent = blank ? '' : target;
           front.style.backgroundColor = '';
           const staticGlyph = isStaticChar(target);
           frontSpan.style.color = isEmojiChar(target) ? EMOJI_YELLOW : '';
           front.classList.toggle('static-glyph', staticGlyph);
+          el.classList.toggle('tile--blank', blank);
           currentChar = target;
         };
 

@@ -170,6 +170,12 @@ body {
   border-radius: 3px;
 }
 
+/* Blank cells (padding gaps between label/emoji/value) render as no
+   tile at all — the cell is removed from view so the board shows the
+   board background instead of a dark empty flap. */
+.tile--blank { background: transparent; }
+.tile--blank .tile-inner { visibility: hidden; }
+
 .tile-inner {
   width: 100%;
   height: 100%;
