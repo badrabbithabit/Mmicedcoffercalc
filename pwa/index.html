@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <!--
-  Coffee Ratio Calculator — index.html (Flipboard / Subway style)
+  Coffee Ratio Calculator — index.html (Split-flap flipboard, iPhone Air)
 
   ── ID Map ──────────────────────────────────────────────────────
-   theme-dots            → theme picker container
-   theme-btn[data-theme]→ one button per visual style (3 themes)
+   flipboard           → split-flap board (top area)
+   grounds-display     → current grounds value (bottom card)
    grounds-slider      → grounds input (15-60g) — the only user input
-   grounds-display     → shows current grounds value
-   hot-water-value     → displays computed hot water
-   ice-value           → displays computed ice
-  total-value         → displays computed total output
-  warning             → warning banner (hidden unless triggered)
-  warning-text        → warning message text
+   warning / warning-text → max-batch warning (hidden unless triggered)
 -->
 
 <html lang="en">
@@ -20,7 +15,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#0d0d0f">
   <meta name="description" content="Coffee ratio calculator for Japanese iced coffee">
   <link rel="manifest" href="manifest.json">
   <title>Coffee Ratio</title>
@@ -29,78 +24,34 @@
 <body data-theme="subway">
   <div class="app">
 
-    <!-- Masthead -->
-    <header class="masthead">
-      <div class="masthead-left">
-        <h1 class="title">Coffee Ratio</h1>
-        <p class="subtitle">Japanese Iced Coffee</p>
+    <!-- SPLIT-FLAP FLIPBOARD — all outputs -->
+    <main class="flipboard-zone">
+      <div class="board" id="flipboard" role="status" aria-live="polite" aria-label="Coffee recipe outputs">
+        <div class="tile-grid" id="tile-grid"></div>
       </div>
-      <div class="theme-dots" id="theme-dots" role="radiogroup" aria-label="Visual style">
-        <button type="button" class="theme-dot" data-theme="subway"  title="Subway"  aria-label="Subway theme"></button>
-        <button type="button" class="theme-dot" data-theme="flipboard" title="Flipboard" aria-label="Flipboard theme"></button>
-        <button type="button" class="theme-dot" data-theme="noir"     title="Noir"     aria-label="Noir theme"></button>
+    </main>
+
+    <!-- CONTROLS — bottom third (NOT flipboard style) -->
+    <section class="controls">
+      <div class="control-row">
+        <span class="control-label">Grounds</span>
+        <span class="control-value" id="grounds-display">30 g</span>
       </div>
-    </header>
+      <input
+        type="range"
+        id="grounds-slider"
+        class="slider"
+        min="15"
+        max="60"
+        step="1"
+        value="30"
+        aria-label="Coffee grounds in grams"
+      >
+      <div class="slider-ranges">
+        <span>15 g</span>
+        <span>60 g</span>
+      </div>
 
-    <main class="feed">
-
-      <!-- HERO: big total output number -->
-      <section class="card hero-card">
-        <div class="hero-eyebrow">Total Output</div>
-        <div class="hero-value" id="total-value">—</div>
-        <div class="hero-sub">hot water + ice</div>
-      </section>
-
-      <!-- INPUTS: grounds (only adjustable input) -->
-      <section class="card">
-        <div class="card-head">
-          <span class="card-label">Inputs</span>
-        </div>
-
-        <div class="grounds-block">
-          <div class="row-between">
-            <span class="row-label">Grounds</span>
-            <span class="row-value big" id="grounds-display">30 g</span>
-          </div>
-          <input
-            type="range"
-            id="grounds-slider"
-            class="slider"
-            min="15"
-            max="60"
-            step="1"
-            value="30"
-            aria-label="Coffee grounds in grams"
-          >
-          <div class="slider-ranges">
-            <span>15 g</span>
-            <span>60 g</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- RESULTS BREAKDOWN -->
-      <section class="card">
-        <div class="card-head">
-          <span class="card-label">Output</span>
-        </div>
-
-        <div class="result-item" id="hot-water-result">
-          <span class="result-label">Hot Water</span>
-          <span class="result-value" id="hot-water-value">—</span>
-        </div>
-        <div class="result-item ice-item" id="ice-result">
-          <span class="result-label">Ice</span>
-          <span class="result-value" id="ice-value">—</span>
-        </div>
-        <div class="result-divider"></div>
-        <div class="result-item total-item">
-          <span class="result-label">Total</span>
-          <span class="result-value total-value" id="total-breakdown-value">—</span>
-        </div>
-      </section>
-
-      <!-- Max batch warning -->
       <div class="warning" id="warning" hidden>
         <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -109,21 +60,10 @@
         </svg>
         <span class="warning-text" id="warning-text"></span>
       </div>
+    </section>
 
-    </main>
-
-    <footer class="footer">
-      <p>Moccamaster · Japanese Iced Coffee</p>
-    </footer>
   </div>
 
   <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js');
-      });
-    }
-  </script>
 </body>
 </html>

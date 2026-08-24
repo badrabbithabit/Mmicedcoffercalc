@@ -1,35 +1,23 @@
 /*
- * Coffee Ratio Calculator — styles.css (Flipboard / Subway style)
- *
- * ── Architecture ─────────────────────────────────────────────────
- * Three visual styles, switched via [data-theme] on <body>:
- *   "subway"    — dark transit-board: black, bold white, amber signal
- *   "flipboard" — magazine cards: warm paper, espresso, soft shadows
- *   "noir"      — espresso noir: near-black brown, cream, brass accent
- * Theme persistence handled in app.js (localStorage).
+ * Coffee Ratio Calculator — styles.css (split-flap flipboard, iPhone Air)
  *
  * ── Layout ──────────────────────────────────────────────────────
- * .app      : flex column, safe-area padding (iOS notch)
- * .masthead : title + theme dots, sticky-feel top
- * .feed     : max-width 460px, stacked cards (Flipboard column)
- * .card     : surface, rounded, themed shadow
- * .hero-card: oversized number card
- * .slider   : full-width range input
- * .toggle-btn: iOS-style switch
- * .warning  : themed warning banner
+ * .app            : full-viewport flex column (100dvh)
+ * .flipboard-zone : top area (flex 1) — the split-flap board
+ * .controls       : bottom third — slider + grounds display (plain UI)
+ *
+ * The board emulates a mechanical split-flap display (flipoff-style):
+ * one .tile per character, staggered scramble + flip on change.
  */
 
 :root {
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
-  --transition-fast: 150ms cubic-bezier(0.4,0,0.2,1);
-  --transition-smooth: 250ms cubic-bezier(0.4,0,0.2,1);
-  --transition-spring: 300ms cubic-bezier(0.34,1.56,0.64,1);
-}
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-/* ── THEME 1: SUBWAY (default) — dark transit board ─────────────── */
-body[data-theme="subway"] {
   --bg: #0d0d0f;
   --surface: #17171b;
   --surface-2: #1f1f25;
@@ -37,68 +25,22 @@ body[data-theme="subway"] {
   --text-secondary: #9b9ba3;
   --text-tertiary: #5f5f68;
   --accent: #ffb424;
-  --accent-contrast: #1a1206;
-  --accent-light: rgba(255,180,36,0.16);
+  --accent-light: rgba(255, 180, 36, 0.16);
   --track: #2a2a32;
   --ice: #5cc8ff;
-  --warning-bg: rgba(255,180,36,0.12);
+  --warning-bg: rgba(255, 180, 36, 0.12);
   --warning-text: #ffb424;
-  --warning-border: rgba(255,180,36,0.4);
-  --divider: rgba(255,255,255,0.07);
-  --shadow: 0 2px 12px rgba(0,0,0,0.45);
+  --warning-border: rgba(255, 180, 36, 0.4);
+  --divider: rgba(255, 255, 255, 0.07);
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
   --font-display: -apple-system, BlinkMacSystemFont, system-ui, "SF Pro Display", "Segoe UI", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
-  --letter-title: 0.06em;
-  --radius-lg: 18px;
-  --hero-size: 4.4rem;
-}
 
-/* ── THEME 2: FLIPBOARD — magazine cards ────────────────────────── */
-body[data-theme="flipboard"] {
-  --bg: #f2ede5;
-  --surface: #ffffff;
-  --surface-2: #faf7f2;
-  --text-primary: #26211c;
-  --text-secondary: #857b6f;
-  --text-tertiary: #b3a99c;
-  --accent: #2f6db5;
-  --accent-contrast: #ffffff;
-  --accent-light: rgba(47,109,181,0.12);
-  --track: #e7e0d6;
-  --ice: #4aa3df;
-  --warning-bg: #fdf1dc;
-  --warning-text: #a4611d;
-  --warning-border: #f0d9b0;
-  --divider: rgba(38,33,28,0.08);
-  --shadow: 0 3px 14px rgba(60,45,25,0.08);
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --font-body: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
-  --letter-title: 0.01em;
-  --hero-size: 4rem;
-}
-
-/* ── THEME 3: NOIR — espresso noir ──────────────────────────────── */
-body[data-theme="noir"] {
-  --bg: #14100d;
-  --surface: #1f1813;
-  --surface-2: #28201a;
-  --text-primary: #efe6da;
-  --text-secondary: #a89a8a;
-  --text-tertiary: #6b5f52;
-  --accent: #d8a34d;
-  --accent-contrast: #241a08;
-  --accent-light: rgba(216,163,77,0.15);
-  --track: #2e251d;
-  --ice: #6fb0c9;
-  --warning-bg: rgba(216,163,77,0.12);
-  --warning-text: #d8a34d;
-  --warning-border: rgba(216,163,77,0.4);
-  --divider: rgba(239,230,218,0.08);
-  --shadow: 0 2px 14px rgba(0,0,0,0.5);
-  --font-display: -apple-system, BlinkMacSystemFont, system-ui, "SF Pro Display", "Segoe UI", serif;
-  --font-body: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
-  --letter-title: 0.04em;
-  --hero-size: 4.2rem;
+  /* Board / tile sizing — fits 16 columns inside iPhone Air width */
+  --tile-size: clamp(24px, 5.4vw, 46px);
+  --tile-gap: clamp(2px, 0.4vw, 4px);
+  --board-pad-x: clamp(14px, 4vw, 28px);
+  --board-pad-y: clamp(14px, 3vw, 24px);
 }
 
 /* Reset & Base */
@@ -110,158 +52,192 @@ body {
   font-family: var(--font-body);
   background-color: var(--bg);
   color: var(--text-primary);
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   line-height: 1.5;
-  overflow-x: hidden;
-  transition: background-color var(--transition-smooth), color var(--transition-smooth);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* App Layout */
+/* App shell — full screen, no scroll (iPhone Air: flipboard top, controls bottom) */
 .app {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 1rem) env(safe-area-inset-left);
+  height: 100vh;
+  height: 100dvh;
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }
 
-/* Masthead */
-.masthead {
-  width: 100%;
-  max-width: 460px;
-  padding: 1.75rem 1.25rem 1.1rem;
+/* ── Flipboard (top) ──────────────────────────────────────────── */
+.flipboard-zone {
+  flex: 1 1 auto;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0.5rem 0.5rem 0.75rem;
+  overflow: hidden;
 }
 
-.title {
-  font-family: var(--font-display);
-  font-size: 1.55rem;
-  font-weight: 800;
-  letter-spacing: var(--letter-title);
-  text-transform: uppercase;
-  line-height: 1.15;
-}
-.subtitle {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-top: 4px;
+.board {
+  position: relative;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.045), transparent 60%),
+    #1a1a1a;
+  border-radius: var(--radius-lg);
+  padding: var(--board-pad-y) var(--board-pad-x);
+  box-shadow:
+    0 -4px 20px rgba(0, 0, 0, 0.25),
+    0 18px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* Theme dots */
-.theme-dots { display: flex; gap: 10px; padding-bottom: 6px; }
-.theme-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--text-tertiary);
-  cursor: pointer;
-  padding: 0;
-  transition: transform var(--transition-spring), border-color var(--transition-fast);
-}
-.theme-dot[data-theme="subway"]   { background: linear-gradient(135deg, #0d0d0f 49%, #ffb424 51%); }
-.theme-dot[data-theme="flipboard"]{ background: linear-gradient(135deg, #ffffff 49%, #2f6db5 51%); }
-.theme-dot[data-theme="noir"]     { background: linear-gradient(135deg, #14100d 49%, #d8a34d 51%); }
-.theme-dot.active { border-color: var(--accent); transform: scale(1.12); }
-.theme-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* Feed (Flipboard column) */
-.feed {
-  width: 100%;
-  max-width: 460px;
-  padding: 0.25rem 1.25rem 0;
+/* Accent squares — stacked blocks in top corners (flipoff look) */
+.accent-bar {
+  position: absolute;
+  top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 3px;
+  z-index: 5;
+}
+.accent-bar-left { left: 14px; }
+.accent-bar-right { right: 14px; }
+.accent-segment {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  transition: background-color 0.5s ease;
 }
 
-/* Cards */
-.card {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  padding: 1.2rem 1.25rem;
-  box-shadow: var(--shadow);
-  transition: background-color var(--transition-smooth), transform 120ms ease;
+/* Tile grid */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 16), var(--tile-size));
+  grid-template-rows: repeat(var(--grid-rows, 5), var(--tile-size));
+  gap: var(--tile-gap);
 }
-.card:active { transform: scale(0.997); }
 
-.card-head {
+/* ── Tile (one split-flap cell) ───────────────────────────────── */
+.tile {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  perspective: 400px;
+  background: #111;
+  border-radius: 3px;
+}
+
+.tile-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.tile-front,
+.tile-back {
+  position: absolute;
+  inset: 1px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: #222;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.tile-front span,
+.tile-back span {
+  font-size: calc(var(--tile-size) * 0.52);
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.tile-back { transform: rotateX(180deg); }
+
+/* Mechanical seam down the middle of each flap */
+.tile-front::after,
+.tile-back::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+/* Metallic highlight sweep while flipping */
+.tile-front::before,
+.tile-back::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.tile.scrambling .tile-front::before,
+.tile.scrambling .tile-back::before { opacity: 1; }
+
+.tile-inner,
+.tile.scrambling .tile-inner { will-change: transform; }
+
+/* ── Controls (bottom third) — plain UI, NOT flipboard ────────── */
+.controls {
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 1rem 1.25rem calc(1.1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.control-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  align-items: baseline;
 }
-.card-label {
-  font-size: 0.72rem;
-  font-weight: 700;
+.control-label {
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
-
-/* HERO card */
-.hero-card {
-  background: linear-gradient(160deg, var(--surface-2), var(--surface));
-  text-align: center;
-  padding: 1.6rem 1.25rem 1.4rem;
-}
-.hero-eyebrow {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 0.5rem;
-}
-.hero-value {
-  font-family: var(--font-display);
-  font-size: var(--hero-size);
-  font-weight: 800;
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  color: var(--text-primary);
-}
-.hero-sub {
-  margin-top: 0.45rem;
-  font-size: 0.78rem;
-  color: var(--text-tertiary);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* Rows */
-.row-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.6rem;
-}
-.row-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.03em;
-}
-.row-value.big {
-  font-size: 1.7rem;
+.control-value {
+  font-size: 1.55rem;
   font-weight: 800;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
   font-family: var(--font-display);
+  line-height: 1.1;
 }
 
-/* Dividers */
-.divider { height: 1px; background: var(--divider); margin: 1rem 0; }
-.result-divider { height: 1px; background: var(--divider); margin: 0.75rem 0; }
-
-/* Sliders */
+/* Slider */
 .slider {
   -webkit-appearance: none;
   appearance: none;
@@ -280,56 +256,38 @@ body {
   border-radius: 50%;
   background: var(--accent);
   border: 3px solid var(--surface);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   transition: transform var(--transition-spring);
 }
 .slider::-webkit-slider-thumb:active { transform: scale(1.18); }
 .slider::-moz-range-thumb {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--accent); border: 3px solid var(--surface);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
 }
 
 .slider-ranges {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.7rem;
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-tertiary);
   letter-spacing: 0.04em;
 }
 
-/* Results */
-.result-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.45rem;
-}
-.result-label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.03em; }
-.result-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-.ice-item .result-value { color: var(--ice); }
-.total-item { margin-top: 0.2rem; }
-.total-item .result-label { font-weight: 700; color: var(--text-primary); }
-.total-item .result-value { font-size: 1.3rem; font-weight: 800; color: var(--accent); font-family: var(--font-display); }
-.total-value.warning, .hero-value.warning { color: var(--warning-text); }
-
-/* Warning Banner */
+/* Warning banner */
 .warning {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 0.9rem;
   background: var(--warning-bg);
   border: 1px solid var(--warning-border);
   border-radius: var(--radius-md);
   color: var(--warning-text);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   opacity: 0;
   transform: translateY(-6px);
@@ -338,34 +296,13 @@ body {
 .warning:not([hidden]) { opacity: 1; transform: translateY(0); }
 .warning-icon { width: 16px; height: 16px; flex-shrink: 0; }
 
-/* Footer */
-.footer {
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
-  text-align: center;
-  color: var(--text-tertiary);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  border-top: 1px solid var(--divider);
-  width: 100%;
-  max-width: 460px;
-}
-
-/* Value flash animation */
-@keyframes valueFlash {
-  0% { opacity: 1; filter: brightness(1.35); }
-  100% { opacity: 1; filter: brightness(1); }
-}
-.value-animate { animation: valueFlash 250ms cubic-bezier(0.34,1.56,0.64,1); }
-
-/* Remove number input spinners */
+/* Remove number input spinners (kept for parity) */
 input::-webkit-outer-spin, input::-webkit-inner-spin { margin: 0; opacity: 0; }
 
 /* Small screens */
-@media (max-width: 380px) {
-  .title { font-size: 1.35rem; }
-  .split-num { font-size: 1.7rem; }
+@media (max-width: 360px) {
+  :root { --tile-size: 5.2vw; }
+  .control-value { font-size: 1.35rem; }
 }
 
 /* Reduced motion */
