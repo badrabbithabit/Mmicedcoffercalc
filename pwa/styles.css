@@ -101,20 +101,16 @@ body {
   line-height: 1;
 }
 
-/* ── Panels — lighter-black boxes framing the two boards ─────── */
-/* The app column gives each panel horizontal breathing room; the
-   panel is the visible "box" (lighter than the black board inside).
-   Top panel holds the brand + recipe board; quote panel holds the
-   daily quote board. */
+/* ── Panels — Changi Airport split-flap housing ──────────────── */
+/* Square corners, solid grey, no rounding or glow — like the
+   physical departures-board cabinet the flaps sit in. */
 .panel {
   flex: 0 0 auto;
   margin: 0 0.75rem;
   padding: 0.5rem 0.5rem 0.75rem;
-  background: #141416;
-  border-radius: var(--radius-lg);
-  box-shadow:
-    0 2px 14px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: #3a3a3e;
+  border-radius: 0;
+  box-shadow: none;
 }
 .panel-top { margin-top: 0.75rem; }
 .panel-quote { margin-top: 0.9rem; }
@@ -145,12 +141,9 @@ body {
 .board {
   position: relative;
   background: #000;
-  border-radius: var(--radius-lg);
+  border-radius: 0;
   padding: var(--board-pad-y) var(--board-pad-x);
-  box-shadow:
-    0 -4px 20px rgba(0, 0, 0, 0.25),
-    0 18px 40px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
 }
 
 /* Accent squares — stacked blocks in top corners (flipoff look) */
@@ -188,7 +181,7 @@ body {
   height: var(--tile-size);
   perspective: 400px;
   background: #000;
-  border-radius: 3px;
+  border-radius: 0;
 }
 
 /* Blank cells (padding gaps between label/emoji/value) render as no
@@ -211,7 +204,7 @@ body {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   background: #222;
-  border-radius: 2px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
