@@ -140,28 +140,29 @@ body {
 
 /* The board is transparent — the grey .panel behind it is the visible
    background, so there is no black bed around the tiles. */
+/* Extra top padding makes a dedicated lane for the accent blocks so
+   they never overlap the first tile row. */
 .board {
   position: relative;
   background: transparent;
   border-radius: 0;
-  padding: var(--board-pad-y) var(--board-pad-x);
+  padding: calc(var(--board-pad-y) + 14px) var(--board-pad-x) var(--board-pad-y);
   box-shadow: none;
 }
 
-/* Accent squares — stacked blocks in top corners (flipoff look) */
+/* Accent squares — stacked blocks in the top corners (flipoff look).
+   Parked INSIDE the board's top padding so they never poke past the
+   board/panel edges and get clipped. */
 .accent-bar {
   position: absolute;
-  top: 6px;
+  top: 8px;
   display: flex;
   flex-direction: column;
   gap: 3px;
   z-index: 5;
 }
-/* Parked in the top outer corners — above the grid and outside the
-   board's side padding, so they never overlap the tiles on narrow
-   phones where the board nearly fills the viewport width. */
-.accent-bar-left { left: -6px; }
-.accent-bar-right { right: -6px; }
+.accent-bar-left { left: 8px; }
+.accent-bar-right { right: 8px; }
 .accent-segment {
   width: 12px;
   height: 12px;
