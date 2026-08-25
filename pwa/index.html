@@ -27,25 +27,29 @@
 <body data-theme="subway">
   <div class="app">
 
-    <!-- BRAND — non-flipboard logo, always visible (no animation) -->
-    <header class="brand" role="banner">
-      <span class="brand-name">BRH</span>
-      <span class="brand-sub">Brewhouse</span>
-    </header>
+    <!-- PANEL 1 — brand + recipe flipboard, in a lighter-black box -->
+    <div class="panel panel-top">
+      <header class="brand" role="banner">
+        <span class="brand-name">BRH</span>
+        <span class="brand-sub">Brewhouse</span>
+      </header>
 
-    <!-- SPLIT-FLAP FLIPBOARD — all outputs -->
-    <main class="flipboard-zone">
-      <div class="board" id="flipboard" role="status" aria-live="polite" aria-label="Coffee recipe outputs">
-        <div class="tile-grid" id="tile-grid"></div>
-      </div>
-    </main>
+      <!-- SPLIT-FLAP FLIPBOARD — all outputs -->
+      <main class="flipboard-zone">
+        <div class="board" id="flipboard" role="status" aria-live="polite" aria-label="Coffee recipe outputs">
+          <div class="tile-grid" id="tile-grid"></div>
+        </div>
+      </main>
+    </div>
 
-    <!-- DAILY QUOTE — one coffee quote per day, on its own board -->
-    <section class="quote-zone" aria-label="Coffee quote of the day">
-      <div class="board board-quote" id="quote-board" role="status" aria-live="polite">
-        <div class="tile-grid" id="quote-grid"></div>
-      </div>
-    </section>
+    <!-- PANEL 2 — daily quote, in its own lighter-black box -->
+    <div class="panel panel-quote">
+      <section class="quote-zone" aria-label="Coffee quote of the day">
+        <div class="board board-quote" id="quote-board" role="status" aria-live="polite">
+          <div class="tile-grid" id="quote-grid"></div>
+        </div>
+      </section>
+    </div>
 
     <!-- Spacer — absorbs leftover height so both boards stay grouped at top -->
     <div class="board-spacer" aria-hidden="true"></div>

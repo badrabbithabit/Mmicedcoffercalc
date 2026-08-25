@@ -93,13 +93,34 @@ body {
 }
 .brand-sub {
   font-family: var(--font-display);
-  font-size: clamp(0.82rem, 3.4vw, 1.15rem);
   font-weight: 600;
+  font-size: clamp(0.82rem, 3.4vw, 1.15rem);
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--text-secondary);
   line-height: 1;
 }
+
+/* ── Panels — lighter-black boxes framing the two boards ─────── */
+/* The app column gives each panel horizontal breathing room; the
+   panel is the visible "box" (lighter than the black board inside).
+   Top panel holds the brand + recipe board; quote panel holds the
+   daily quote board. */
+.panel {
+  flex: 0 0 auto;
+  margin: 0 0.75rem;
+  padding: 0.5rem 0.5rem 0.75rem;
+  background: #141416;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.panel-top { margin-top: 0.75rem; }
+.panel-quote { margin-top: 0.9rem; }
+
+/* The brand sits at the top of the top panel, left-aligned inside it */
+.panel-top .brand { padding: 0.35rem 0.5rem 0.1rem; }
 
 /* ── Flipboard (top) ──────────────────────────────────────────── */
 /* Both boards sit together at the top with equal spacing. The
@@ -111,7 +132,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 0;
-  padding: 0.75rem 0.75rem;
+  padding: 0.35rem 0.25rem;
   overflow: hidden;
 }
 
@@ -343,7 +364,7 @@ body {
   flex: 0 0 auto;
   display: flex;
   justify-content: center;
-  padding: 0.75rem 0.75rem;
+  padding: 0.35rem 0.25rem;
   min-height: 0;
 }
 
