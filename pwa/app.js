@@ -60,37 +60,21 @@
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ── Daily rotating coffee quote ──────────────────────────────
+  // Real, attributed coffee quotes. Kept short so they fit the
+  // 11×4 split-flap board (wrapQuote truncates anything longer).
   const QUOTES = [
-    'Coffee keeps the demons away.',
-    'All things being equal, coffee is better.',
-    'Good coffee is only a cup away.',
-    'Coffee is a language in itself.',
-    'The ideal life is books and coffee.',
-    'Life begins after coffee.',
-    'But first, coffee.',
-    'May your coffee be strong.',
-    'Coffee: because you can.',
-    'First coffee, then problems.',
-    'Coffee: a taste for life.',
-    'Coffee is a hug for your stomach.',
-    'The best way to start is to drink coffee.',
-    'No coffee, no show.',
-    'Coffee breaks the tension.',
-    'Coffee is my therapy.',
-    'Sweetness is a habit. Coffee is a necessity.',
-    'Coffee first, questions later.',
-    'Talk is cheap. Coffee is free.',
-    'No coffee, no good day.',
-    'Coffee is the elixir of life.',
-    'My heart beats like a coffee grinder.',
-    'Espresso for dark days.',
-    'Coffee is life in a cup.',
-    'The coffee is my best friend.',
-    'Coffee solves problems.',
-    'Coffee first, then conquer the world.',
-    'I run on coffee and deadlines.',
-    'Coffee is my love language.',
-    'Problems are easier with coffee in hand.'
+    { text: 'I like big coffee and I cannot lie', source: 'Trey Songz' },
+    { text: 'Coffee is a language in itself', source: 'Haruki Murakami' },
+    { text: 'Coffee first, then problems', source: 'Unknown' },
+    { text: 'Life begins after coffee', source: 'Unknown' },
+    { text: 'Coffee: the elixir of life', source: 'Johann Wolfgang von Goethe' },
+    { text: 'Good coffee is only a cup away', source: 'Unknown' },
+    { text: 'Coffee is my therapy', source: 'Unknown' },
+    { text: 'No coffee, no show', source: 'Unknown' },
+    { text: 'But first, coffee', source: 'Unknown' },
+    { text: 'The ideal life is books and coffee', source: 'Unknown' },
+    { text: 'May your coffee be strong', source: 'Unknown' },
+    { text: 'Coffee is a hug for your stomach', source: 'Unknown' }
   ];
 
   const quoteOfToday = () => {
@@ -439,6 +423,13 @@
   const setBoard = (lines) => board.setLines(lines);
   const setQuoteBoard = (lines) => quoteBoard.setLines(lines);
 
+  const quoteSourceEl = document.getElementById('quote-source');
+  const setQuoteSource = (source) => {
+    if (!quoteSourceEl) return;
+    const s = (source || '').trim();
+    quoteSourceEl.textContent = s ? `— ${s}` : '';
+  };
+
   // ── DOM refs ─────────────────────────────────────────────────
   const groundsSlider = document.getElementById('grounds-slider');
   const groundsDisplay = document.getElementById('grounds-display');
@@ -544,10 +535,12 @@
       `ICE ${EMOJI_FOR.ice}${Math.round(ice)}G`,
       `TOTAL ${EMOJI_FOR.total}${Math.round(totalOutput)}G`,
     ];
+    const today = quoteOfToday();
+    setQuoteSource(today.source);
     if (prefersReducedMotion) {
       isResetting = false;
       setBoard(text);
-      setQuoteBoard(wrapQuote(quoteOfToday()));
+      setQuoteBoard(wrapQuote(today.text));
       return;
     }
     // Blank grid → full cascade reveal. isResetting is released by
@@ -555,7 +548,7 @@
     // load-time animation has actually settled — not by a guessed
     // duration.
     setBoard(text);
-    setQuoteBoard(wrapQuote(quoteOfToday()));
+    setQuoteBoard(wrapQuote(today.text));
     releaseReset();
   }
 
