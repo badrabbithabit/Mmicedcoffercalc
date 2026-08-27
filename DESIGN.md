@@ -30,18 +30,19 @@ the first space into **label / glyph / value**:
 
 ```
 cols (1-based):  1 2 3 4 5 6 7 8 9 10 11
-DOSE:            D O S E [gap] ☕ [gap]  3 0  G
-HOT:             H O T  [gap] ♨ [gap]  2 7 0  G   (4-char value)
+DOSE:            D O S E [gap] 🫘 [gap]  3 0  G
+HOT:             H O T  [gap] ♨ [gap]  2 7 0 ㎖  (4-char value)
 ICE:             I C E  [gap] ❄ [gap]    1 8 0  G
-TOTL:            T O T L [gap] 🥤 [gap]  4 5 0  M
+TOTL:            T O T L [gap] 🥤 [gap]  4 5 0 ㎖
 ```
 
 - **Cols 1–5**: label, left-aligned, padded to 5 chars.
 - **Col 6**: static glyph (emoji, or 🥤 U+1F964 on the TOTL row).
-- **Cols 7–11**: value + unit, right-aligned within the 5-wide value zone.
-  Unit is `G` (grams) for DOSE/HOT/ICE and `M` (ml) for the TOTL row.
+- **Cols 7–12**: value + unit, right-aligned within the 6-wide value zone
+  (col 11 is the trailing gap, so the zone effectively ends at col 10).
+  Unit is `G` (grams) for DOSE/ICE and ㎖ (U+3396, ml) for HOT/TOTL.
 
-`valuePad = 5 - value.length` (NOT `cols - 1 - value.length` — that was a bug
+`valuePad = 6 - value.length` (NOT `cols - 1 - value.length` — that was a bug
 that pushed the value past col 11 and it got truncated, making values vanish).
 
 ### Quote board
@@ -55,11 +56,11 @@ so nothing is ever silently cut off. Quotes rotate daily via
 
 ## Static Glyphs vs. Animated
 
-`STATIC_CHARS = ['☕', '♨', '❄', '\u{1F964}', 'M']` (in `recipe.js`) are
+`STATIC_CHARS = ['\u{1FAC8}', '♨', '❄', '\u{1F964}', '㎖']` (in `recipe.js`) are
 **static** — they never flip or scramble. Everything else (letters, digits)
 animates.
 
-`isStaticChar(c)` → true for the emoji + the `M` unit. `isEmojiChar(c)` → true
+`isStaticChar(c)` → true for the emoji + the ㎖ unit. `isEmojiChar(c)` → true
 only for the four emoji (they get `EMOJI_YELLOW` color). Static glyphs get a
 `.static-glyph` class and skip the scramble in `scrambleTo`.
 

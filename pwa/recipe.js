@@ -34,7 +34,7 @@
   // 0-based columns rendered as no-tile gaps (the flipboard "space").
   const GAP_COLS = [4, 6];
   // Static (non-flipboard) tiles — emoji and the unit letter.
-  const STATIC_CHARS = ['☕', '♨', '❄', '\u{1F964}', 'M'];
+   const STATIC_CHARS = ['\u{1FAC8}', '♨', '❄', '\u{1F964}', '㎖'];
 
   // One recipe for a given grounds weight. Invalid input → null values
   // (the UI renders "—" and the tests assert null).
@@ -58,18 +58,18 @@
 
   // The four recipe board lines: DOSE / HOT / ICE / TOTL.
   // Layout (11 cols, gaps at 5 & 7, 1-based):
-  //   DOSE ☕ 30G    | cols 1..5 label, col 6 emoji, cols 8..11 value
-  //   TOTL \u{1F964} 450M | same layout, unit M (ml)
+  //   DOSE 🫘 30G    | cols 1..5 label, col 6 emoji, cols 7..11 value+unit
+  //   TOTL \u{1F964} 450㎖ | same layout, unit ㎖ (U+3396, ml)
   function boardLines(grounds) {
     const r = recipeFor(grounds);
     if (!r.valid) {
-      return ['DOSE ☕ —G', 'HOT ♨ —G', 'ICE ❄ —G', 'TOTL \u{1F964} —M'];
+      return ['DOSE \u{1FAC8} —G', 'HOT ♨ —㎖', 'ICE ❄ —G', 'TOTL \u{1F964} —㎖'];
     }
     return [
-      `DOSE ☕${r.grounds}G`,
-      `HOT ♨${r.hot}G`,
+      `DOSE \u{1FAC8}${r.grounds}G`,
+      `HOT ♨${r.hot}㎖`,
       `ICE ❄${r.ice}G`,
-      `TOTL \u{1F964}${r.total}M`
+      `TOTL \u{1F964}${r.total}㎖`
     ];
   }
 

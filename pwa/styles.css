@@ -235,7 +235,7 @@ body {
 
 .tile-back { transform: rotateX(180deg); }
 
-/* Non-flipboard glyphs (☕ ♨ ❄ 🥤 + the "G"/"M" units): no mechanical seam,
+/* Non-flipboard glyphs (🫘 ♨ ❄ 🥤 + the "G"/"㎖" units): no mechanical seam,
    dead-centre. They render in a monospace stack (not the system emoji
    font) so each glyph occupies exactly one fixed-width cell. The font-size
    is the SAME as the text spans (no override here) so every cell shares one

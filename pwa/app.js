@@ -26,10 +26,11 @@
 
   // Row glyphs (emoji) are STATIC tiles — no flip/scramble — so they
   // stay vertically centred and never jitter during a transition.
-  // The unit letter M (ml) is static too; it sits in the shared
+  // The unit ㎖ (ml, U+3396) is static too; it sits in the shared
   // STATIC_CHARS list from recipe.js alongside the emoji.
   const STATIC_SET = new Set(STATIC_CHARS);
-  const EMOJI_ONLY = new Set(STATIC_CHARS.filter((c) => c !== 'M'));
+  const UNIT_CHAR = '㎖';
+  const EMOJI_ONLY = new Set(STATIC_CHARS.filter((c) => c !== UNIT_CHAR));
   const isEmojiChar = (ch) => EMOJI_ONLY.has(ch);
   const isStaticChar = (ch) => STATIC_SET.has(ch);
   const EMOJI_YELLOW = '#FFCC00';
@@ -297,7 +298,7 @@
           // space before the value.
           //   cols 1..5  → LABEL (left-aligned)
           //   col  6     → EMOJI  (pinned to column 6 for every row)
-          //   cols 7..11 → VALUE (digits + G), right-aligned
+          //   cols 7..12 → VALUE (digits + unit), right-aligned
           const spIdx = chars.indexOf(' ');
           if (spIdx > 0) {
             const label = chars.slice(0, spIdx);
@@ -305,8 +306,9 @@
             const value = chars.slice(spIdx + 2);
             // Emoji at col 6 (index 5) → pad the label to exactly 5 wide.
             const labelPad = Math.max(0, 5 - label.length);
-            // Value zone is cols 7..11 (5 wide); right-align within it.
-            const valuePad = Math.max(0, 5 - value.length);
+            // Value zone is cols 7..12 (6 wide; col 11 is the trailing
+            // gap, so values never overflow past it); right-align within it.
+            const valuePad = Math.max(0, 6 - value.length);
             paddedChars = label
               .concat(Array(labelPad).fill(' '),
                 emoji,

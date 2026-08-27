@@ -105,20 +105,28 @@ console.log('boardLines — 4-row recipe board layout (11 cols, gaps at 5 & 7)')
 test('boardLines returns 4 lines (DOSE/HOT/ICE/TOTL)', () => {
   const lines = boardLines(30);
   assert.strictEqual(lines.length, ROWS);
-  assert.strictEqual(lines[0], 'DOSE ☕30G');
-  assert.strictEqual(lines[1], 'HOT ♨270G');
+  assert.strictEqual(lines[0], 'DOSE \u{1FAC8}30G');
+  assert.strictEqual(lines[1], 'HOT ♨270㎖');
   assert.strictEqual(lines[2], 'ICE ❄180G');
-  assert.strictEqual(lines[3], 'TOTL \u{1F964}450M');
+  assert.strictEqual(lines[3], 'TOTL \u{1F964}450㎖');
 });
 
-test('dose row: label, coffee-bean glyph, 2-unit value + G unit', () => {
-  // D O S E · ☕ · ␣ 3 0 G  (cols: 4 gap, 5 emoji, 6 gap, 7 blank value-pad)
-  assert.strictEqual(layoutLine('DOSE ☕30G'), 'DOSE·☕· 30G');
+test('dose row: label, coffee-bean glyph (U+1FAC8), 2-unit value + G unit', () => {
+  // D O S E · \u{1FAC8} · ␣ 3 0 G  (glyph pinned to col 5; value right-aligned
+  // in the 5-wide cols 7..11 zone)
+  assert.strictEqual(layoutLine('DOSE \u{1FAC8}30G'), 'DOSE·\u{1FAC8}· 30G');
 });
 
-test('TOTL row: 4-char label, U+1F964, 3-unit value + M unit', () => {
-  // T O T L · \u{1F964} · 4 5 0 M  (cols: 4 gap, 5 glyph, 6 gap)
-  assert.strictEqual(layoutLine('TOTL \u{1F964}450M'), 'TOTL·\u{1F964}·450M');
+test('HOT row: 3-char label, ♨, 3-unit value + ㎖ unit (U+3396)', () => {
+  // H O T · ♨ · 2 7 0 ㎖  (glyph at gap col 4; the 4-char value+unit
+  // right-aligns so the ㎖ unit sits in the trailing gap column 11,
+  // rendered blank-styled like the G unit on other rows)
+  assert.strictEqual(layoutLine('HOT ♨270㎖'), 'HOT ·♨·270㎖');
+});
+
+test('TOTL row: 4-char label, U+1F964, 3-unit value + ㎖ unit (on gap col)', () => {
+  // T O T L · \u{1F964} · 4 5 0 ㎖  (same: unit in gap col 11)
+  assert.strictEqual(layoutLine('TOTL \u{1F964}450㎖'), 'TOTL·\u{1F964}·450㎖');
 });
 
 test('all board lines fit 11 columns (no truncation)', () => {
