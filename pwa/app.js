@@ -7,50 +7,31 @@
  * SplitFlapBoard / Tile — split-flap display engine (flipoff-inspired)
  * No audio. No framework, no dependencies — vanilla JS only.
  *
- * ── Formula (hard-coded Japanese Iced Coffee) ───────────────────
- * totalWater  = grounds × 15
- * hotWater    = totalWater × 0.60
- * ice         = totalWater × 0.40
- * totalOutput = hotWater + ice
- *
- * ── Constants ────────────────────────────────────────────────────
- * BREW_RATIO     : 15 (1:15 total liquid per gram of grounds)
- * ICE_PERCENT    : 40 (40% ice / 60% hot water)
- * MAX_BATCH_GRAMS: 1000 (1L hard cap)
- * CUPS_PER_LITER : 4.22675 (US cups)
+ * The ratio math and board line formatting live in recipe.js (UMD),
+ * shared with the Node test suite so tests exercise the shipped code.
  */
 
 (() => {
   'use strict';
 
-  // ── Formula constants ────────────────────────────────────────
-  const CUPS_PER_LITER = 4.22675;
-  const MAX_BATCH_GRAMS = 1000;
-  const BREW_RATIO = 15;   // 1:15 total water per gram of grounds
-  const ICE_PERCENT = 40;  // 40% ice / 60% hot water split
+  // ── Shared pure logic (recipe.js) ────────────────────────────
+  const { recipeFor, boardLines, wrapQuote, COLS, ROWS, GAP_COLS, STATIC_CHARS } = window.Recipe;
 
   // ── Split-flap display constants (flipoff-inspired) ───────────
-  const GRID_COLS = 11;
-  const GRID_ROWS = 3;
   const FLIP_DURATION = 260;
   const STAGGER_DELAY = 22;
   const SCRAMBLE_INTERVAL = 70;
   const SCRAMBLES_PER_FLIP = 9;
   const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.·-: ";
 
-  // Row glyphs. These are rendered as STATIC tiles (no flip/scramble) so
-  // they stay vertically centred and never jitter during a transition.
-  const EMOJI_FOR = {
-    coffee: '☕', // ☕ U+2615
-    hot: '♨',      // ♨ U+2668
-    ice: '❄',      // ❄ U+2744
-    total: '▦'     // ▦ U+25A6
-  };
-  // Static (non-flipboard) tiles — emoji and the "G" unit.
-  const STATIC_EMOJI = new Set(Object.values(EMOJI_FOR));
-  const STATIC_UNIT = 'G';
-  const isEmojiChar = (ch) => STATIC_EMOJI.has(ch);
-  const isStaticChar = (ch) => isEmojiChar(ch) || ch === STATIC_UNIT;
+  // Row glyphs (emoji) are STATIC tiles — no flip/scramble — so they
+  // stay vertically centred and never jitter during a transition.
+  // The unit letter M (ml) is static too; it sits in the shared
+  // STATIC_CHARS list from recipe.js alongside the emoji.
+  const STATIC_SET = new Set(STATIC_CHARS);
+  const EMOJI_ONLY = new Set(STATIC_CHARS.filter((c) => c !== 'M'));
+  const isEmojiChar = (ch) => EMOJI_ONLY.has(ch);
+  const isStaticChar = (ch) => STATIC_SET.has(ch);
   const EMOJI_YELLOW = '#FFCC00';
   const SCRAMBLE_COLORS = ['#00AAFF', '#00FFCC', '#AA00FF', '#FF2D00', '#FFCC00', '#FFFFFF'];
   const ACCENT_COLORS = ['#00FF7F', '#FF4D00', '#AA00FF', '#00AAFF', '#00FFCC'];
@@ -265,7 +246,6 @@
     gridEl.style.setProperty('--grid-rows', rows);
 
     const tiles = [];
-    const currentGrid = [];
     // What the DOM actually shows right now. Tiles that are mid-flip
     // still display their OLD char, so a new cascade must start from
     // this grid — comparing against the target would double-start.
@@ -279,7 +259,6 @@
         row.push(t);
       }
       tiles.push(row);
-      currentGrid.push(new Array(cols).fill(' '));
       displayedGrid.push(new Array(cols).fill(' '));
     }
     totalTiles += rows * cols;
@@ -383,15 +362,14 @@
               const started = tiles[r][c].scrambleTo(target, (r * cols + c) * STAGGER_DELAY);
               if (!started) tiles[r][c].set(target);
             }
-          } else {
-            // Tile already shows the target — count it as settled for
-            // the load-time release check.
-            tiles[r][c].markSettled();
-          }
+        } else {
+          // Tile already shows the target — count it as settled for
+          // the load-time release check.
+          tiles[r][c].markSettled();
         }
       }
-      currentGrid.splice(0, currentGrid.length, ...newGrid);
-      displayedGrid.splice(0, displayedGrid.length, ...newGrid);
+    }
+    displayedGrid.splice(0, displayedGrid.length, ...newGrid);
       accentIndex++;
       paintAccents();
     };
@@ -399,25 +377,21 @@
     return { setLines, rows };
   }
 
-  // Gap columns (0-based) to render as no-tile: col 5 and col 7 (1-based).
-  const GAP_COLS = new Set([4, 6]);
   const board = makeBoard(
     document.getElementById('flipboard'),
     document.getElementById('tile-grid'),
-    GRID_COLS,
-    GRID_ROWS,
+    COLS,
+    ROWS,
     0,
-    'justify', // labels left, values right
-    GAP_COLS
+    'justify',
+    new Set(GAP_COLS)
   );
 
-  const QUOTE_COLS = 11;
-  const QUOTE_ROWS = 4;
   const quoteBoard = makeBoard(
     document.getElementById('quote-board'),
     document.getElementById('quote-grid'),
-    QUOTE_COLS,
-    QUOTE_ROWS,
+    COLS,
+    ROWS,
     ACCENT_COLORS.length // offset so accent colors differ from the main board
   );
   const setBoard = (lines) => board.setLines(lines);
@@ -437,68 +411,32 @@
   const warningText = document.getElementById('warning-text');
 
   // ── Core calculation ─────────────────────────────────────────
-  function recalc(grounds) {
-    if (isNaN(grounds) || grounds <= 0) {
+  function applyRecipe(grounds) {
+    const r = recipeFor(grounds);
+    if (!r.valid) {
       groundsDisplay.textContent = '—';
       warningEl.hidden = true;
       return;
     }
 
     groundsDisplay.textContent = `${grounds} g`;
-
-     const hotPercent = 100 - ICE_PERCENT;
-    const totalWater = grounds * BREW_RATIO;
-    const hotWater = totalWater * (hotPercent / 100);
-    const ice = totalWater * (ICE_PERCENT / 100);
-    const totalOutput = hotWater + ice;
-
-    const hotMl = Math.round(hotWater);
-    const iceMl = Math.round(ice);
-    const totalMl = Math.round(totalOutput);
-    const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
-
-    const boardText = [
-      `DOSE ${EMOJI_FOR.coffee}${grounds}G`,
-      `HOT ${EMOJI_FOR.hot}${hotMl}G`,
-      `ICE ${EMOJI_FOR.ice}${iceMl}G`,
-      `TOTAL ${EMOJI_FOR.total}${totalMl}G`,
-    ];
-
-    // Never fight the load-time reset animation.
-    if (!isResetting) setBoard(boardText);
-
-    if (totalOutput > MAX_BATCH_GRAMS) {
-      warningEl.hidden = false;
-      warningText.textContent = 'Total exceeds 1 L max batch. Reduce grounds.';
-    } else {
-      warningEl.hidden = true;
-    }
+    setBoard(boardLines(grounds));
+    warningEl.hidden = !r.warning;
+    warningText.textContent = 'Total exceeds 1 L max batch. Reduce grounds.';
   }
 
   let boardDebounce = null;
   function calculate() {
     const grounds = parseInt(groundsSlider.value, 10);
 
-    if (isNaN(grounds) || grounds <= 0) {
-      groundsDisplay.textContent = '—';
-      warningEl.hidden = true;
-      return;
-    }
+    // Update the plain controls instantly, even while resetting.
+    const r = recipeFor(grounds);
+    groundsDisplay.textContent = r.valid ? `${grounds} g` : '—';
+    warningEl.hidden = !(r.valid && r.warning);
+    warningText.textContent = 'Total exceeds 1 L max batch. Reduce grounds.';
 
-    groundsDisplay.textContent = `${grounds} g`;
-
-    const hotPercent = 100 - ICE_PERCENT;
-    const totalWater = grounds * BREW_RATIO;
-    const hotWater = totalWater * (hotPercent / 100);
-    const ice = totalWater * (ICE_PERCENT / 100);
-    const totalOutput = hotWater + ice;
-
-    if (totalOutput > MAX_BATCH_GRAMS) {
-      warningEl.hidden = false;
-      warningText.textContent = 'Total exceeds 1 L max batch. Reduce grounds.';
-    } else {
-      warningEl.hidden = true;
-    }
+    // Never fight the load-time reset animation.
+    if (isResetting) return;
 
     // Debounce the flipboard: slider input fires on every tick while
     // dragging, which would queue up a flip animation per value.
@@ -506,7 +444,7 @@
     if (boardDebounce) clearTimeout(boardDebounce);
     boardDebounce = setTimeout(() => {
       boardDebounce = null;
-      recalc(grounds);
+      applyRecipe(grounds);
     }, 140);
   }
 
@@ -514,7 +452,7 @@
     if (boardDebounce) {
       clearTimeout(boardDebounce);
       boardDebounce = null;
-      recalc(parseInt(groundsSlider.value, 10));
+      applyRecipe(parseInt(groundsSlider.value, 10));
     }
   }
 
@@ -523,18 +461,7 @@
   // cascade to reveal the recipe, then input changes animate normally.
   function runResetAnimation() {
     const grounds = parseInt(groundsSlider.value, 10) || 30;
-    const totalWater = grounds * BREW_RATIO;
-    const hotWater = totalWater * ((100 - ICE_PERCENT) / 100);
-    const ice = totalWater * (ICE_PERCENT / 100);
-    const totalOutput = hotWater + ice;
-    const totalLiters = (totalOutput / 1000).toFixed(2);
-    const totalCups = (totalOutput / 1000 * CUPS_PER_LITER).toFixed(1);
-    const text = [
-      `DOSE ${EMOJI_FOR.coffee}${grounds}G`,
-      `HOT ${EMOJI_FOR.hot}${Math.round(hotWater)}G`,
-      `ICE ${EMOJI_FOR.ice}${Math.round(ice)}G`,
-      `TOTAL ${EMOJI_FOR.total}${Math.round(totalOutput)}G`,
-    ];
+    const text = boardLines(grounds);
     const today = quoteOfToday();
     setQuoteSource(today.source);
     if (prefersReducedMotion) {
@@ -550,36 +477,6 @@
     setBoard(text);
     setQuoteBoard(wrapQuote(today.text));
     releaseReset();
-  }
-
-  // Fit a quote onto the quote board's fixed 12×4 grid:
-  // longest line ≤ 12 chars, up to 4 lines. If the quote needs
-  // more than QUOTE_ROWS lines, the final line is truncated with
-  // "…" so no quote is ever silently cut off.
-  function wrapQuote(quote) {
-    const words = quote.toUpperCase().split(' ');
-    const lines = [];
-    let line = '';
-    for (const w of words) {
-      if (line && (line.length + 1 + w.length) > QUOTE_COLS) {
-        lines.push(line);
-        line = w;
-      } else {
-        line = line ? line + ' ' + w : w;
-      }
-    }
-    if (line) lines.push(line);
-
-    if (lines.length > QUOTE_ROWS) {
-      const kept = lines.slice(0, QUOTE_ROWS);
-      kept[QUOTE_ROWS - 1] =
-        kept[QUOTE_ROWS - 1].slice(0, QUOTE_COLS - 1).trimEnd() + '…';
-      lines.length = 0;
-      lines.push(...kept);
-    }
-
-    while (lines.length < QUOTE_ROWS) lines.push(' ');
-    return lines.slice(0, QUOTE_ROWS);
   }
 
   // ── Wiring ───────────────────────────────────────────────────

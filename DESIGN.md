@@ -6,14 +6,15 @@ glyphs (emoji, the "G" unit suffix) render without animation.
 
 ## Stack
 
-- Vanilla ES module (`app.js`), no build step.
+- Vanilla JS, no build step. `recipe.js` (UMD) holds all pure logic and is
+  shared between the PWA and the Node tests.
 - `index.html` — two boards: recipe (`flipboard` / `tile-grid`) and daily
   quote (`quote-board` / `quote-grid`), plus a `range` slider for grounds.
 - `styles.css` — CSS custom properties drive tile sizing; 3D transforms for the
   flip.
 - `sw.js` — service worker, cache-first on install, network-first on fetch.
   **Bump `CACHE_NAME` on every push** or browsers serve stale assets.
-- `tests.js` — Node-based logic tests (run with `node tests.js`).
+- `tests.js` — Node-based logic tests over `recipe.js` (run with `node tests.js`).
 
 ## Grid Layout
 
@@ -21,22 +22,24 @@ glyphs (emoji, the "G" unit suffix) render without animation.
 ```
 GRID_COLS = 11, GRID_ROWS = 4
 ```
-Rows: `DOSE`, `HOT`, `ICE`, `TOTAL`.
+Rows: `DOSE`, `HOT`, `ICE`, `TOTL`.
 
-Each row is built by `formatLines` and, when `justify === 'justify'`, split on
-the first space into **label / emoji / value**:
+Each row is built by `boardLines()` (in `recipe.js`) and laid out by
+`formatLines` in `app.js`, which, when `justify === 'justify'`, splits on
+the first space into **label / glyph / value**:
 
 ```
 cols (1-based):  1 2 3 4 5 6 7 8 9 10 11
-DOSE:            D O S E [gap] ☕ [gap]  1 5  G
-HOT:             H O T  [gap] ♨ [gap]  1 3 5  G   (4-char value)
-ICE:             I C E  [gap] ❄ [gap]     9 0  G
-TOTAL:           T O T A L [gap] ▦ [gap]  2 2 5  G
+DOSE:            D O S E [gap] ☕ [gap]  3 0  G
+HOT:             H O T  [gap] ♨ [gap]  2 7 0  G   (4-char value)
+ICE:             I C E  [gap] ❄ [gap]    1 8 0  G
+TOTL:            T O T L [gap] 🥤 [gap]  4 5 0  M
 ```
 
 - **Cols 1–5**: label, left-aligned, padded to 5 chars.
-- **Col 6**: static emoji glyph.
-- **Cols 7–11**: value + `G`, right-aligned within the 5-wide value zone.
+- **Col 6**: static glyph (emoji, or 🥤 U+1F964 on the TOTL row).
+- **Cols 7–11**: value + unit, right-aligned within the 5-wide value zone.
+  Unit is `G` (grams) for DOSE/HOT/ICE and `M` (ml) for the TOTL row.
 
 `valuePad = 5 - value.length` (NOT `cols - 1 - value.length` — that was a bug
 that pushed the value past col 11 and it got truncated, making values vanish).
@@ -52,12 +55,12 @@ so nothing is ever silently cut off. Quotes rotate daily via
 
 ## Static Glyphs vs. Animated
 
-`EMOJI_FOR = { dose: '☕', hot: '♨', ice: '❄', total: '▦' }` plus the `G`
-suffix are **static** — they never flip or scramble. Everything else (letters,
-digits) animates.
+`STATIC_CHARS = ['☕', '♨', '❄', '\u{1F964}', 'M']` (in `recipe.js`) are
+**static** — they never flip or scramble. Everything else (letters, digits)
+animates.
 
-`isStaticChar(c)` → true for emoji + `G`. `isEmojiChar(c)` → true only for the
-four emoji (they get `EMOJI_YELLOW` color). Static glyphs get a
+`isStaticChar(c)` → true for the emoji + the `M` unit. `isEmojiChar(c)` → true
+only for the four emoji (they get `EMOJI_YELLOW` color). Static glyphs get a
 `.static-glyph` class and skip the scramble in `scrambleTo`.
 
 **Why static:** a split-flap emoji scrambling through random glyphs looks

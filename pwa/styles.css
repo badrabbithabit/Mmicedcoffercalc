@@ -174,7 +174,7 @@ body {
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 16), var(--tile-size));
-  grid-template-rows: repeat(var(--grid-rows, 5), var(--tile-size));
+  grid-template-rows: repeat(var(--grid-rows, 4), var(--tile-size));
   gap: var(--tile-gap);
 }
 
@@ -235,7 +235,7 @@ body {
 
 .tile-back { transform: rotateX(180deg); }
 
-/* Non-flipboard glyphs (☕ ♨ ❄ ▦ + the "G" unit): no mechanical seam,
+/* Non-flipboard glyphs (☕ ♨ ❄ 🥤 + the "G"/"M" units): no mechanical seam,
    dead-centre. They render in a monospace stack (not the system emoji
    font) so each glyph occupies exactly one fixed-width cell. The font-size
    is the SAME as the text spans (no override here) so every cell shares one
@@ -395,9 +395,6 @@ body {
 }
 .warning:not([hidden]) { opacity: 1; transform: translateY(0); }
 .warning-icon { width: 16px; height: 16px; flex-shrink: 0; }
-
-/* Remove number input spinners (kept for parity) */
-input::-webkit-outer-spin, input::-webkit-inner-spin { margin: 0; opacity: 0; }
 
 /* Small screens */
 @media (max-width: 360px) {
