@@ -306,9 +306,10 @@
             const value = chars.slice(spIdx + 2);
             // Emoji at col 6 (index 5) → pad the label to exactly 5 wide.
             const labelPad = Math.max(0, 5 - label.length);
-            // Value zone is cols 7..12 (6 wide; col 11 is the trailing
-            // gap, so values never overflow past it); right-align within it.
-            const valuePad = Math.max(0, 6 - value.length);
+            // Value zone is cols 7..11 (5 wide, 0-based 6..10). Right-align
+            // so the unit lands on col 10 (a real tile), never col 11 —
+            // the trailing gap column with no tile.
+            const valuePad = Math.max(0, 5 - value.length);
             paddedChars = label
               .concat(Array(labelPad).fill(' '),
                 emoji,

@@ -22,7 +22,7 @@ function formatLine(line) {
     const emoji = chars.slice(spIdx + 1, spIdx + 2);
     const value = chars.slice(spIdx + 2);
     const labelPad = Math.max(0, 5 - label.length);
-    const valuePad = Math.max(0, 5 - value.length);
+    const valuePad = Math.max(0, 5 - value.length); // cols 7..11, unit on col 10
     return label
       .concat(Array(labelPad).fill(' '), emoji, Array(valuePad).fill(' '), value);
   }
@@ -118,14 +118,13 @@ test('dose row: label, coffee-bean glyph (U+1FAD8), 2-unit value + G unit', () =
 });
 
 test('HOT row: 3-char label, ♨, 3-unit value + ㎖ unit (U+3396)', () => {
-  // H O T · ♨ · 2 7 0 ㎖  (glyph at gap col 4; the 4-char value+unit
-  // right-aligns so the ㎖ unit sits in the trailing gap column 11,
-  // rendered blank-styled like the G unit on other rows)
+  // H O T · ♨ · 2 7 0 ㎖  (4-char value+unit right-aligns in the 5-wide
+  // cols 7..11 zone; the ㎖ unit lands on col 10, a real tile)
   assert.strictEqual(layoutLine('HOT ♨270㎖'), 'HOT ·♨·270㎖');
 });
 
-test('TOTL row: 4-char label, U+1F964, 3-unit value + ㎖ unit (on gap col)', () => {
-  // T O T L · \u{1F964} · 4 5 0 ㎖  (same: unit in gap col 11)
+test('TOTL row: 4-char label, U+1F964, 3-unit value + ㎖ unit', () => {
+  // T O T L · \u{1F964} · 4 5 0 ㎖  (unit on col 10, the last visible tile)
   assert.strictEqual(layoutLine('TOTL \u{1F964}450㎖'), 'TOTL·\u{1F964}·450㎖');
 });
 
