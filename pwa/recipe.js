@@ -58,7 +58,7 @@
 
   // The four recipe board lines: DOSE / HOT / ICE / TOTL.
   // Layout (11 cols, gaps at 5 & 7, 1-based):
-  //   DOSE 🫘 30G    | cols 1..4 label, col 5 emoji, cols 6..10 value+unit
+  //   DOSE 🫘 30G    | cols 1..5 label, col 6 emoji, cols 7..11 value+unit
   //   TOTL \u{1F964} 450㎖ | same layout, unit ㎖ (U+3396, ml)
   function boardLines(grounds) {
     const r = recipeFor(grounds);
