@@ -296,19 +296,18 @@
           // into Unicode code points, so a 2-unit emoji still counts as ONE
           // cell). The single space sits between LABEL and EMOJI; there is no
           // space before the value.
-          //   cols 1..5  → LABEL (left-aligned)
-          //   col  6     → EMOJI  (pinned to column 6 for every row)
-          //   cols 7..12 → VALUE (digits + unit), right-aligned
+          //   cols 1..4  → LABEL (left-aligned)
+          //   col  5     → EMOJI  (pinned to column 5 for every row)
+          //   cols 6..10 → VALUE (digits + unit), right-aligned
           const spIdx = chars.indexOf(' ');
           if (spIdx > 0) {
             const label = chars.slice(0, spIdx);
             const emoji = chars.slice(spIdx + 1, spIdx + 2);
             const value = chars.slice(spIdx + 2);
-            // Emoji at col 6 (index 5) → pad the label to exactly 5 wide.
-            const labelPad = Math.max(0, 5 - label.length);
-            // Value zone is cols 7..12 (6 wide; col 11 is the trailing
-            // gap, so values never overflow past it); right-align within it.
-            const valuePad = Math.max(0, 6 - value.length);
+            // Emoji at col 5 (index 4) → pad the label to exactly 4 wide.
+            const labelPad = Math.max(0, 4 - label.length);
+            // Value zone is cols 6..10 (5 wide); right-align within it.
+            const valuePad = Math.max(0, 5 - value.length);
             paddedChars = label
               .concat(Array(labelPad).fill(' '),
                 emoji,
