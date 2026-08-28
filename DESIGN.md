@@ -56,7 +56,7 @@ so nothing is ever silently cut off. Quotes rotate daily via
 
 ## Static Glyphs vs. Animated
 
-`STATIC_CHARS = ['\u{1FAC8}', '♨', '❄', '\u{1F964}', '㎖']` (in `recipe.js`) are
+`STATIC_CHARS = ['\u{1FAD8}', '♨', '❄', '\u{1F964}', '㎖']` (in `recipe.js`) are
 **static** — they never flip or scramble. Everything else (letters, digits)
 animates.
 

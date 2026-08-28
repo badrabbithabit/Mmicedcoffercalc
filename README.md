@@ -80,7 +80,7 @@ yellow, unit letter static):
 
 | Row | Label | Glyph | Value | Unit |
 |-----|-------|-------|-------|------|
-| 1 | `DOSE` | 🫘 U+1FAC8 bean | grounds | G (g) |
+| 1 | `DOSE` | 🫘 U+1FAD8 bean | grounds | G (g) |
 | 2 | `HOT` | ♨ hot spring | hot water | ㎖ (U+3396, ml) |
 | 3 | `ICE` | ❄ snowflake | ice | G (g) |
 | 4 | `TOTL` | 🥤 U+1F964 | total | **㎖ (U+3396, ml)** |

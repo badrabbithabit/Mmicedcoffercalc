@@ -105,16 +105,16 @@ console.log('boardLines — 4-row recipe board layout (11 cols, gaps at 5 & 7)')
 test('boardLines returns 4 lines (DOSE/HOT/ICE/TOTL)', () => {
   const lines = boardLines(30);
   assert.strictEqual(lines.length, ROWS);
-  assert.strictEqual(lines[0], 'DOSE \u{1FAC8}30G');
+  assert.strictEqual(lines[0], 'DOSE \u{1FAD8}30G');
   assert.strictEqual(lines[1], 'HOT ♨270㎖');
   assert.strictEqual(lines[2], 'ICE ❄180G');
   assert.strictEqual(lines[3], 'TOTL \u{1F964}450㎖');
 });
 
-test('dose row: label, coffee-bean glyph (U+1FAC8), 2-unit value + G unit', () => {
-  // D O S E · \u{1FAC8} · ␣ 3 0 G  (glyph pinned to col 5; value right-aligned
+test('dose row: label, coffee-bean glyph (U+1FAD8), 2-unit value + G unit', () => {
+  // D O S E · \u{1FAD8} · ␣ 3 0 G  (glyph pinned to col 5; value right-aligned
   // in the 5-wide cols 7..11 zone)
-  assert.strictEqual(layoutLine('DOSE \u{1FAC8}30G'), 'DOSE·\u{1FAC8}· 30G');
+  assert.strictEqual(layoutLine('DOSE \u{1FAD8}30G'), 'DOSE·\u{1FAD8}· 30G');
 });
 
 test('HOT row: 3-char label, ♨, 3-unit value + ㎖ unit (U+3396)', () => {

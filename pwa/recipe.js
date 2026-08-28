@@ -34,7 +34,7 @@
   // 0-based columns rendered as no-tile gaps (the flipboard "space").
   const GAP_COLS = [4, 6];
   // Static (non-flipboard) tiles — emoji and the unit letter.
-   const STATIC_CHARS = ['\u{1FAC8}', '♨', '❄', '\u{1F964}', '㎖'];
+   const STATIC_CHARS = ['\u{1FAD8}', '♨', '❄', '\u{1F964}', '㎖'];
 
   // One recipe for a given grounds weight. Invalid input → null values
   // (the UI renders "—" and the tests assert null).
@@ -63,10 +63,10 @@
   function boardLines(grounds) {
     const r = recipeFor(grounds);
     if (!r.valid) {
-      return ['DOSE \u{1FAC8} —G', 'HOT ♨ —㎖', 'ICE ❄ —G', 'TOTL \u{1F964} —㎖'];
+      return ['DOSE \u{1FAD8} —G', 'HOT ♨ —㎖', 'ICE ❄ —G', 'TOTL \u{1F964} —㎖'];
     }
     return [
-      `DOSE \u{1FAC8}${r.grounds}G`,
+      `DOSE \u{1FAD8}${r.grounds}G`,
       `HOT ♨${r.hot}㎖`,
       `ICE ❄${r.ice}G`,
       `TOTL \u{1F964}${r.total}㎖`
